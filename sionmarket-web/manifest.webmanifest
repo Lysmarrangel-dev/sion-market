@@ -1,0 +1,14 @@
+{
+  "name": "Sionmarket",
+  "short_name": "Sionmarket",
+  "description": "Lo que necesitas, a un toque.",
+  "lang": "es-VE",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FB6301",
+  "icons": [
+    { "src": "/assets/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/assets/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

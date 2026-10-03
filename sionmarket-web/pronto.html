@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es-VE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Muy pronto · Sionmarket</title>
+  <meta name="theme-color" content="#FB6301">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Montserrat+Alternates:wght@600&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/pronto.js"></script>
+</head>
+<body>
+  <div class="pronto-banda" aria-hidden="true"></div>
+  <div class="pronto">
+    <header class="pronto-cabecera">
+      <a href="index.html" class="logo-link" aria-label="Sionmarket, inicio">
+        <img class="logo logo-claro" src="assets/logo-principal.webp" alt="Sionmarket" width="1200" height="526">
+        <img class="logo logo-oscuro" src="assets/logo-negativo.webp" alt="" width="1200" height="526">
+      </a>
+      <div class="usuario" id="usuario" hidden>
+        <span class="avatar" id="avatar" aria-hidden="true"></span>
+        <button class="btn btn-fantasma" type="button" id="btn-salir">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <!-- Cargando -->
+    <main class="pronto-cuerpo" id="vista-cargando">
+      <div class="carga"><span class="ruedas girando" aria-hidden="true"><i></i><i></i><i></i></span><span role="status">Cargando tu cuenta</span></div>
+    </main>
+
+    <!-- Cuenta creada, falta confirmar correo -->
+    <main class="pronto-cuerpo" id="vista-confirmar" hidden>
+      <div>
+        <h1 class="display" id="titulo-confirmar" tabindex="-1">Ya casi. Confirma tu correo.</h1>
+        <p class="lead">Te enviamos un enlace a <strong id="email-pendiente">tu correo</strong>. Ábrelo para activar tu cuenta y guardar tu lugar en el lanzamiento.</p>
+        <div class="carga"><span class="ruedas girando" aria-hidden="true"><i></i><i></i><i></i></span><span>Esperando la confirmación</span></div>
+        <p class="apoyo nota-form">¿No te llegó? Revisa la carpeta de spam o pide otro correo.</p>
+        <div class="hero-acciones">
+          <button class="btn btn-primario" type="button" id="btn-reenviar">Reenviar correo</button>
+          <a class="btn btn-fantasma" href="login.html">Ya lo confirmé</a>
+        </div>
+        <div class="aviso nota-form" id="aviso-confirmar"></div>
+      </div>
+      <div class="tarjeta-intereses">
+        <h2>Mientras tanto</h2>
+        <p>Esto es lo que vas a poder hacer cuando abramos en San Felipe:</p>
+        <ul class="comercios-beneficios lista-clara">
+          <li>Pedir a restaurantes y supermercados y seguir al repartidor en el mapa.</li>
+          <li>Comparar precios entre comercios con ayuda del asistente.</li>
+          <li>Pagar con Pago Móvil o en efectivo al recibir.</li>
+        </ul>
+      </div>
+    </main>
+
+    <!-- Cuenta activa: próximamente -->
+    <main class="pronto-cuerpo" id="vista-cuenta" hidden>
+      <div>
+        <h1 class="display" id="titulo-cuenta" tabindex="-1">Hola. Ya tienes tu lugar.</h1>
+        <p class="lead" id="texto-cuenta">Sionmarket abre muy pronto en San Felipe. Te avisamos el día del lanzamiento para que hagas tu primer pedido.</p>
+        <div class="carga"><span class="ruedas girando" aria-hidden="true"><i></i><i></i><i></i></span><span>Estamos preparando todo</span></div>
+        <div class="pronto-progreso" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" aria-label="Etapa 1 de 4: piloto"><i></i></div>
+        <div class="pronto-etapas"><b>Piloto</b><span>Viajes</span><span>Asistentes</span><span>Más ciudades</span></div>
+      </div>
+
+      <form class="tarjeta-intereses" id="form-intereses" novalidate>
+        <h2>¿Qué te gustaría usar primero?</h2>
+        <p>Elige lo que más te interesa. Así priorizamos los comercios y servicios del lanzamiento.</p>
+        <div class="aviso" id="aviso-intereses"></div>
+        <fieldset class="opciones">
+          <legend class="sr-only">Servicios de interés</legend>
+          <div class="opcion">
+            <input type="checkbox" id="i-super" name="intereses" value="super">
+            <label for="i-super"><span><strong>Súper y tiendas</strong><small>Víveres, farmacia, hogar</small></span><span class="punto punto-naranja" aria-hidden="true"></span></label>
+          </div>
+          <div class="opcion">
+            <input type="checkbox" id="i-delivery" name="intereses" value="delivery">
+            <label for="i-delivery"><span><strong>Delivery de restaurantes</strong><small>Comida a domicilio</small></span><span class="punto punto-brasa" aria-hidden="true"></span></label>
+          </div>
+          <div class="opcion">
+            <input type="checkbox" id="i-viajes" name="intereses" value="viajes">
+            <label for="i-viajes"><span><strong>Viajes en taxi</strong><small>Dentro de San Felipe</small></span><span class="punto punto-carmesi" aria-hidden="true"></span></label>
+          </div>
+        </fieldset>
+
+        <!-- Solo aparece si faltan datos (por ejemplo, cuentas creadas con Google) -->
+        <div id="datos-faltantes" hidden>
+          <div class="campo" id="campo-telefono" hidden>
+            <label for="telefono">Teléfono celular</label>
+            <div class="telefono-campo">
+              <span class="prefijo" aria-hidden="true">+58</span>
+              <input class="entrada" id="telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="412 123 4567">
+            </div>
+          </div>
+          <div id="campo-terminos" hidden>
+            <label class="casilla">
+              <input type="checkbox" id="terminos" name="terminos">
+              <span>Acepto los <a href="legal.html#terminos" target="_blank" rel="noopener">términos y condiciones</a> y la <a href="legal.html#privacidad" target="_blank" rel="noopener">política de privacidad</a>.</span>
+            </label>
+            <p class="error-campo" id="terminos-error"></p>
+          </div>
+        </div>
+
+        <label class="casilla">
+          <input type="checkbox" id="marketing" name="marketing">
+          <span>Avísame del lanzamiento y de promociones por WhatsApp o correo.</span>
+        </label>
+        <button class="btn btn-primario btn-bloque" type="submit">Guardar preferencias</button>
+      </form>
+    </main>
+
+    <footer class="pronto-pie">
+      <p class="apoyo">© 2026 Sionmarket. San Felipe, Venezuela.</p>
+      <p class="apoyo"><a href="legal.html#privacidad">Privacidad</a> y ayuda en <a href="mailto:soporte@sionmarket.com">soporte@sionmarket.com</a></p>
+    </footer>
+  </div>
+</body>
+</html>

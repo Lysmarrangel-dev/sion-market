@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="es-VE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sionmarket · Lo que necesitas, a un toque</title>
+  <meta name="description" content="Compras, delivery y viajes en San Felipe, en una sola app. Con asistentes de inteligencia artificial que aconsejan como alguien de confianza.">
+  <meta name="theme-color" content="#FB6301">
+  <meta property="og:title" content="Sionmarket · La súper-app de San Felipe">
+  <meta property="og:description" content="Compras, delivery y viajes en un solo lugar. Lo que necesitas, a un toque.">
+  <meta property="og:image" content="assets/og-image.jpg">
+  <meta property="og:locale" content="es_VE">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Montserrat+Alternates:wght@600&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/landing.js"></script>
+</head>
+<body>
+  <a class="saltar" href="#contenido">Ir al contenido</a>
+
+  <header class="cabecera" id="cabecera">
+    <div class="contenedor">
+      <a href="index.html" class="logo-link" aria-label="Sionmarket, inicio">
+        <img class="logo logo-claro" src="assets/logo-principal.webp" alt="Sionmarket" width="1200" height="526">
+        <img class="logo logo-oscuro" src="assets/logo-negativo.webp" alt="" width="1200" height="526">
+      </a>
+      <nav aria-label="Principal">
+        <a class="enlace-nav solo-ancho" href="#servicios">Servicios</a>
+        <a class="enlace-nav solo-ancho" href="#comercios">Para comercios</a>
+        <a class="enlace-nav" href="login.html" data-sin-sesion>Iniciar sesión</a>
+        <a class="btn btn-primario" href="registro.html" data-sin-sesion>Crear cuenta</a>
+        <a class="btn btn-primario" href="pronto.html" data-con-sesion hidden>Ir a mi cuenta</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="titulo-hero">
+      <div class="hero-panel" aria-hidden="true"></div>
+      <div class="contenedor">
+        <div class="hero-texto">
+          <span class="marca-espaciada">SIONMARKET</span>
+          <h1 class="display" id="titulo-hero">Lo que necesitas, a un toque.</h1>
+          <p class="lead">Compra en los comercios de San Felipe, recibe tu pedido en casa y sigue al repartidor en el mapa. Todo con una sola cuenta y un mismo método de pago.</p>
+          <div class="hero-acciones">
+            <a class="btn btn-primario" href="registro.html">Crear mi cuenta</a>
+            <a class="btn btn-secundario" href="#comercios">Afiliar mi comercio</a>
+          </div>
+          <p class="hero-nota apoyo">
+            <span class="ruedas" aria-hidden="true"><i></i><i></i><i></i></span>
+            Estamos en fase piloto. Regístrate y te avisamos el día del lanzamiento.
+          </p>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="telefono">
+            <div class="telefono-pantalla">
+              <div class="tel-barra">
+                <img src="assets/logo-principal.webp" alt="" width="1200" height="526">
+                <span>Entrega: <b>Casa</b></span>
+              </div>
+              <p class="tel-saludo">Hola, Ana. ¿Qué necesitas hoy?</p>
+              <div class="tel-busqueda">algo para una parrilla de 8 personas</div>
+              <div class="tel-chips"><span>Carne 4 kg</span><span>Carbón</span><span>Refrescos</span><span>Pan</span><span>Ensalada</span></div>
+              <div class="tel-asistente">
+                <small>Asistente Sion, IA</small>
+                Si son ocho, el combo familiar te sale más barato. ¿Lo agrego?
+              </div>
+              <div class="tel-boton">Pedir ahora</div>
+              <div class="tel-seguimiento">
+                <div class="tel-progreso"><i></i></div>
+                <div class="tel-estado"><b><span class="velocidad"></span>En camino</b><span>Llega en 12 min</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section class="seccion" id="servicios" aria-labelledby="titulo-servicios">
+      <div class="contenedor">
+        <div class="seccion-cabeza">
+          <h2 class="t1" id="titulo-servicios">Tres servicios, una misma cuenta</h2>
+          <p>Hoy comprar y moverse en San Felipe exige muchos canales a la vez. Sionmarket los junta en una sola app.</p>
+        </div>
+        <div class="servicios">
+          <article class="servicio">
+            <span class="punto" aria-hidden="true"></span>
+            <h3>Súper y tiendas</h3>
+            <div>
+              <p>Catálogo unificado de productos y menús de todos los comercios afiliados.</p>
+              <p class="ejemplo">Compara el precio del arroz en tres supermercados y compra en el más conveniente.</p>
+            </div>
+            <span class="estado estado-activo">Piloto</span>
+          </article>
+          <article class="servicio">
+            <span class="punto" aria-hidden="true"></span>
+            <h3>Delivery</h3>
+            <div>
+              <p>Entrega a domicilio con el repartidor en el mapa en tiempo real, desde que recoge tu pedido hasta tu puerta.</p>
+              <p class="ejemplo">Pide la cena de tu restaurante favorito y mira cuándo llega.</p>
+            </div>
+            <span class="estado estado-activo">Piloto</span>
+          </article>
+          <article class="servicio">
+            <span class="punto" aria-hidden="true"></span>
+            <h3>Viajes</h3>
+            <div>
+              <p>Taxi dentro de San Felipe con conductores verificados y tarifa conocida antes de subir.</p>
+              <p class="ejemplo">Ve del centro a tu consulta médica sin negociar el precio.</p>
+            </div>
+            <span class="estado estado-pronto">Próximamente</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CÓMO FUNCIONA -->
+    <section class="seccion seccion-suave" aria-labelledby="titulo-pasos">
+      <div class="contenedor">
+        <div class="seccion-cabeza">
+          <h2 class="t1" id="titulo-pasos">Así funciona un pedido</h2>
+          <p>Te registras una vez. Después, cada compra son cinco pasos.</p>
+        </div>
+        <ol class="pasos">
+          <li class="paso"><span class="paso-num">1</span><h3>Busca</h3><p>Escribe lo que necesitas como se lo dirías a alguien. El asistente encuentra dónde está.</p></li>
+          <li class="paso"><span class="paso-num">2</span><h3>Paga</h3><p>Pago Móvil o efectivo al recibir. Ves el costo del envío antes de confirmar.</p></li>
+          <li class="paso"><span class="paso-num">3</span><h3>Sigue</h3><p>Ves el estado de tu pedido y al repartidor en el mapa. Le escribes por chat sin compartir tu número.</p></li>
+          <li class="paso"><span class="paso-num">4</span><h3>Recibe</h3><p>Delivery a tu puerta o retiro en la tienda, como prefieras.</p></li>
+          <li class="paso"><span class="paso-num">5</span><h3>Califica</h3><p>Puntúa la comida y la entrega por separado. Así mejoran tus recomendaciones.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- IA -->
+    <section class="seccion" aria-labelledby="titulo-ia">
+      <div class="contenedor ia">
+        <div>
+          <h2 class="t1" id="titulo-ia">Un asistente que aconseja como alguien de confianza</h2>
+          <ul class="ia-lista">
+            <li><h3>Entiende lo que pides</h3><p>Frases como «algo para una parrilla de 8 personas», aunque escribas con errores.</p></li>
+            <li><h3>Te ayuda a ahorrar</h3><p>Compara precios entre comercios y te avisa cuando un combo te sale mejor.</p></li>
+            <li><h3>Recuerda tus compras</h3><p>Sabe qué compras cada semana y te lo recuerda antes de que se acabe.</p></li>
+          </ul>
+          <p class="ia-nota apoyo">Los asistentes siempre se presentan como asistentes de IA y te ofrecen hablar con una persona del equipo.</p>
+        </div>
+        <div class="chat" aria-label="Ejemplo de conversación con el asistente">
+          <p class="burbuja burbuja-cliente">Necesito lo del desayuno para mañana</p>
+          <p class="burbuja burbuja-ia"><small>Asistente Sion, IA</small>Te armé la lista de siempre: harina, queso blanco, huevos y café. El café se te acaba esta semana. ¿Lo agrego?</p>
+          <p class="burbuja burbuja-cliente">Sí, y el queso que sea del más barato</p>
+          <p class="burbuja burbuja-ia"><small>Asistente Sion, IA</small>Listo. En Frutería La Esquina está más barato y llega en 20 minutos.</p>
+          <div class="chat-acciones" aria-hidden="true">
+            <span class="chip chip-principal">Ver el pedido</span>
+            <span class="chip">Hablar con una persona</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIANZA -->
+    <section class="seccion seccion-suave" aria-labelledby="titulo-confianza">
+      <div class="contenedor">
+        <div class="seccion-cabeza">
+          <h2 class="t1" id="titulo-confianza">Cada persona identificada, cada pedido registrado</h2>
+        </div>
+        <div class="confianza">
+          <div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            <h3>Repartidores verificados</h3><p>Identidad, licencia, vehículo y foto de cada persona que te atiende.</p>
+          </div>
+          <div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <h3>Seguimiento en vivo</h3><p>Ves dónde va tu pedido. La ubicación solo se comparte mientras está activo.</p>
+          </div>
+          <div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/><path d="m2 2 20 20"/></svg>
+            <h3>Tu número, protegido</h3><p>Chat y llamadas con número enmascarado. El repartidor nunca ve tu teléfono.</p>
+          </div>
+          <div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            <h3>Precio claro</h3><p>Productos, envío y propina separados antes de confirmar. Sin sorpresas.</p>
+          </div>
+          <div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>
+            <h3>Calificaciones mutuas</h3><p>Clientes, repartidores y comercios se evalúan entre sí.</p>
+          </div>
+          <div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <h3>Datos cifrados</h3><p>Tu información viaja y se guarda cifrada. Atención para reclamos y reembolsos.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMERCIOS -->
+    <section class="seccion comercios" id="comercios" aria-labelledby="titulo-comercios">
+      <div class="contenedor">
+        <div>
+          <img src="assets/logo-negativo.webp" alt="" width="1200" height="526" class="logo" loading="lazy">
+          <h2 class="t1" id="titulo-comercios">Tu negocio, también en el celular de tus clientes.</h2>
+          <p class="lead">Deja de depender solo de las redes sociales. Gestiona tu catálogo, precios, horarios y pedidos desde tu propio panel.</p>
+          <ul class="comercios-beneficios">
+            <li>Un canal de ventas nuevo, visible en toda la ciudad.</li>
+            <li>Pedidos ordenados en una bandeja, con alerta hasta que los atiendes.</li>
+            <li>Nuestra flota de repartidores retira y entrega por ti.</li>
+            <li>Tú facturas tu venta directo al cliente, como siempre.</li>
+          </ul>
+          <div class="sectores" aria-label="Sectores">
+            <span>Restaurantes</span><span>Supermercados</span><span>Tiendas</span><span>Farmacias</span><span>Panaderías</span>
+          </div>
+        </div>
+
+        <form class="form-comercio" id="form-comercio" novalidate>
+          <h3>Afíliate a Sionmarket</h3>
+          <p>Déjanos tus datos y te escribimos por WhatsApp para darte de alta.</p>
+          <div class="aviso" id="aviso-comercio"></div>
+
+          <div class="campo">
+            <label for="c-nombre">Nombre del comercio</label>
+            <input class="entrada" id="c-nombre" name="nombre_comercio" autocomplete="organization" maxlength="80" required>
+          </div>
+          <div class="campo">
+            <label for="c-sector">Sector</label>
+            <select class="entrada" id="c-sector" name="sector" required>
+              <option value="">Elige uno</option>
+              <option value="restaurante">Restaurante</option>
+              <option value="supermercado">Supermercado</option>
+              <option value="tienda">Tienda</option>
+              <option value="farmacia">Farmacia</option>
+              <option value="panaderia">Panadería</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="c-contacto">Tu nombre</label>
+            <input class="entrada" id="c-contacto" name="contacto" autocomplete="name" maxlength="80" required>
+          </div>
+          <div class="campo">
+            <label for="c-telefono">WhatsApp</label>
+            <div class="telefono-campo">
+              <span class="prefijo" aria-hidden="true">+58</span>
+              <input class="entrada" id="c-telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="412 123 4567" required>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="c-email">Correo <span class="opcional">(opcional)</span></label>
+            <input class="entrada" id="c-email" name="email" type="email" autocomplete="email" maxlength="120">
+          </div>
+          <div class="miel" aria-hidden="true">
+            <label for="c-web">No llenes este campo</label>
+            <input id="c-web" name="sitio_web" tabindex="-1" autocomplete="off">
+          </div>
+          <button class="btn btn-primario btn-bloque" type="submit">Enviar solicitud</button>
+          <p class="apoyo nota-form">Al enviar aceptas que te contactemos sobre la afiliación. Ver <a href="legal.html#privacidad">privacidad</a>.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- HOJA DE RUTA -->
+    <section class="seccion" aria-labelledby="titulo-ruta">
+      <div class="contenedor">
+        <div class="seccion-cabeza">
+          <h2 class="t1" id="titulo-ruta">Un lanzamiento por etapas</h2>
+          <p>Cada servicio se valida antes de sumar el siguiente.</p>
+        </div>
+        <ol class="ruta">
+          <li class="actual"><span class="etapa">Etapa 1 <span class="ahora">Ahora</span></span><h3>Súper y delivery</h3><p>Primer grupo de restaurantes y supermercados de San Felipe.</p></li>
+          <li><span class="etapa">Etapa 2</span><h3>Viajes</h3><p>Taxi con conductores verificados dentro de la ciudad.</p></li>
+          <li><span class="etapa">Etapa 3</span><h3>Asistentes</h3><p>Pedidos recurrentes y analítica de demanda para comercios.</p></li>
+          <li><span class="etapa">Etapa 4</span><h3>Más ciudades</h3><p>Nuevos sectores y otras ciudades de la región.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- CIERRE -->
+    <section class="seccion seccion-suave cierre" aria-labelledby="titulo-cierre">
+      <div class="contenedor">
+        <h2 class="display" id="titulo-cierre">Tu súper de siempre, sin salir de casa.</h2>
+        <div class="barra" aria-hidden="true"></div>
+        <p>Crea tu cuenta hoy y sé de los primeros en pedir cuando abramos en San Felipe.</p>
+        <div class="hero-acciones">
+          <a class="btn btn-primario" href="registro.html">Crear mi cuenta</a>
+          <a class="btn btn-fantasma" href="login.html">Ya tengo cuenta</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      <img class="logo logo-claro" src="assets/logo-principal.webp" alt="Sionmarket" width="1200" height="526" loading="lazy">
+      <img class="logo logo-oscuro" src="assets/logo-negativo.webp" alt="" width="1200" height="526" loading="lazy">
+      <nav aria-label="Pie de página">
+        <a href="registro.html">Crear cuenta</a>
+        <a href="login.html">Iniciar sesión</a>
+        <a href="#comercios">Afiliar comercio</a>
+        <a href="legal.html#terminos">Términos</a>
+        <a href="legal.html#privacidad">Privacidad</a>
+      </nav>
+      <p class="apoyo">© 2026 Sionmarket. San Felipe, Venezuela.</p>
+    </div>
+  </footer>
+</body>
+</html>

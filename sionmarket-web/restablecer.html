@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es-VE" class="pagina-acceso">
+<head>
+  <title>Nueva contraseña · Sionmarket</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FB6301">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Montserrat+Alternates:wght@600&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/restablecer.js"></script>
+</head>
+<body>
+  <div class="acceso">
+    <main class="acceso-form">
+      <a href="index.html" class="logo-link" aria-label="Sionmarket, volver al inicio">
+        <img class="logo logo-claro" src="assets/logo-principal.webp" alt="Sionmarket" width="1200" height="526">
+        <img class="logo logo-oscuro" src="assets/logo-negativo.webp" alt="" width="1200" height="526">
+      </a>
+      <div class="acceso-caja" id="paso-verificando">
+        <h1>Abriendo tu enlace</h1>
+        <div class="carga"><span class="ruedas girando" aria-hidden="true"><i></i><i></i><i></i></span><span role="status">Verificando el enlace</span></div>
+      </div>
+
+      <div class="acceso-caja" id="paso-clave" hidden>
+        <h1>Crea tu contraseña nueva</h1>
+        <p class="subtitulo">Usa una que no hayas usado antes en Sionmarket.</p>
+        <div class="aviso" id="aviso"></div>
+        <form id="form-clave" novalidate>
+          <div class="campo">
+            <label for="clave">Contraseña nueva</label>
+            <div class="clave">
+              <input class="entrada" id="clave" name="clave" type="password" autocomplete="new-password" minlength="8" aria-describedby="reglas-clave" required>
+              <button type="button" class="ver-clave" data-ver-clave="clave" aria-pressed="false" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <div class="fuerza" id="fuerza" data-nivel="0" role="img" aria-label="Sin contraseña"><i></i><i></i><i></i><i></i></div>
+            <ul class="reglas" id="reglas-clave">
+              <li data-regla="largo">8 caracteres o más</li>
+              <li data-regla="letra">Una letra</li>
+              <li data-regla="numero">Un número</li>
+              <li data-regla="mayus">Mayúsculas y minúsculas</li>
+            </ul>
+          </div>
+          <div class="campo">
+            <label for="clave2">Repite la contraseña</label>
+            <input class="entrada" id="clave2" name="clave2" type="password" autocomplete="new-password" required>
+          </div>
+          <button class="btn btn-primario btn-bloque" type="submit">Guardar contraseña</button>
+        </form>
+      </div>
+
+      <div class="acceso-caja" id="paso-vencido" hidden>
+        <h1 tabindex="-1">El enlace ya no sirve</h1>
+        <p class="subtitulo">Los enlaces de recuperación vencen al poco tiempo y solo se pueden usar una vez. Pide uno nuevo y ábrelo desde este mismo dispositivo.</p>
+        <a class="btn btn-primario btn-bloque" href="recuperar.html">Pedir un enlace nuevo</a>
+        <p class="acceso-pie"><a href="login.html">Volver a iniciar sesión</a></p>
+      </div>
+      <p class="acceso-legal apoyo">¿Necesitas ayuda? <a href="mailto:soporte@sionmarket.com">soporte@sionmarket.com</a></p>
+    </main>
+    <aside class="acceso-marca" aria-hidden="true">
+      <img class="isotipo-fondo" src="assets/isotipo-blanco.webp" alt="" width="419" height="709">
+      <p class="frase">Lo que necesitas, a un toque.</p>
+      <p class="apoyo">Un paso más y vuelves a tu cuenta.</p>
+    </aside>
+  </div>
+</body>
+</html>
