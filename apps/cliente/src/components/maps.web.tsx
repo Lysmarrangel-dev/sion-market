@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
-import { BRAND_ANGLE, Colors } from '@/constants/theme';
+import { BRAND_ANGLE, Colors, theme } from '@/constants/theme';
 import { COVERAGE_ZONE, type LatLng } from '@/data/catalog';
 
 // Web has no native map: a schematic of the coverage area so screens still work in the browser.
@@ -64,8 +64,8 @@ export function TrackingMap({ restaurant, customer, rider, style }: { restaurant
 }
 
 const styles = StyleSheet.create({
-  map: { backgroundColor: '#EFE9E1', overflow: 'hidden' },
-  street: { position: 'absolute', backgroundColor: Colors.white },
+  map: { backgroundColor: Colors.map, overflow: 'hidden' },
+  street: { position: 'absolute', backgroundColor: theme === 'dark' ? '#3A3A3A' : Colors.white },
   pin: {
     position: 'absolute',
     marginLeft: -18,

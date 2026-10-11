@@ -15,6 +15,7 @@ import { requestNotificationPermission } from '@/lib/notify';
 import { useAddresses } from '@/store/addresses';
 import { computeTotals, useCart } from '@/store/cart';
 import { useOrders } from '@/store/orders';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 const METHODS: { id: string; label: string; detail: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'Pago Móvil', label: 'Pago Móvil', detail: 'Bs. al cambio BCV del día', icon: 'phone-portrait-outline' },
@@ -25,7 +26,7 @@ const METHODS: { id: string; label: string; detail: string; icon: keyof typeof I
 
 const TIPS = [0, 0.5, 1, 2];
 
-export default function Checkout() {
+function Checkout() {
   const cart = useCart();
   const { selected: address } = useAddresses();
   const { place } = useOrders();
@@ -97,7 +98,7 @@ export default function Checkout() {
                 style={[styles.card, on && styles.cardOn]}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on }}>
-                <Ionicons name={m.icon} size={22} color={on ? Colors.black : Colors.textMuted} />
+                <Ionicons name={m.icon} size={22} color={on ? Colors.ink : Colors.textMuted} />
                 <View style={{ flex: 1 }}>
                   <Text variant="bodyStrong">{m.label}</Text>
                   <Text variant="caption">{m.detail}</Text>
@@ -120,7 +121,7 @@ export default function Checkout() {
                     setCustomTip('');
                     cart.setTip(t);
                   }}>
-                  <Text variant="bodyStrong" style={{ color: on ? Colors.white : Colors.text }}>
+                  <Text variant="bodyStrong" style={{ color: on ? Colors.inkInverse : Colors.text }}>
                     {t ? formatUsd(t) : 'Sin propina'}
                   </Text>
                 </Pressable>
@@ -136,7 +137,7 @@ export default function Checkout() {
               placeholder="Otro $"
               placeholderTextColor={Colors.textMuted}
               keyboardType="decimal-pad"
-              style={[styles.tip, styles.tipInput, customTip ? styles.tipOn : null, customTip ? { color: Colors.white } : null]}
+              style={[styles.tip, styles.tipInput, customTip ? styles.tipOn : null, customTip ? { color: Colors.inkInverse } : null]}
               accessibilityLabel="Otro monto de propina"
             />
           </View>
@@ -144,13 +145,13 @@ export default function Checkout() {
 
         <Section title="Cupón de descuento">
           {coupon ? (
-            <View style={[styles.card, { borderColor: Colors.success, backgroundColor: '#E8F6EE' }]}>
+            <View style={[styles.card, { borderColor: Colors.success, backgroundColor: Colors.successSoft }]}>
               <Ionicons name="pricetag" size={20} color={Colors.success} />
               <View style={{ flex: 1 }}>
                 <Text variant="bodyStrong">{coupon.code}</Text>
                 <Text variant="caption">{coupon.label}</Text>
               </View>
-              <Text variant="bodyStrong" style={{ color: Colors.crimson }} onPress={cart.removeCoupon}>
+              <Text variant="bodyStrong" style={{ color: Colors.danger }} onPress={cart.removeCoupon}>
                 Quitar
               </Text>
             </View>
@@ -165,7 +166,7 @@ export default function Checkout() {
                 placeholder="Ej. SIONNUEVO"
                 placeholderTextColor={Colors.textMuted}
                 autoCapitalize="characters"
-                style={[styles.couponInput, couponError && { borderColor: Colors.crimson }]}
+                style={[styles.couponInput, couponError && { borderColor: Colors.danger }]}
                 accessibilityLabel="Código de cupón"
               />
               <Button
@@ -178,7 +179,7 @@ export default function Checkout() {
             </View>
           )}
           {couponError ? (
-            <Text variant="caption" style={{ color: Colors.crimson }}>
+            <Text variant="caption" style={{ color: Colors.danger }}>
               Ese cupón no existe o ya venció.
             </Text>
           ) : null}
@@ -232,8 +233,8 @@ const styles = StyleSheet.create({
   cardOn: { borderColor: Colors.orange, backgroundColor: Colors.orangeSoft },
   eta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: Colors.line, alignItems: 'center', justifyContent: 'center' },
-  radioOn: { borderColor: Colors.black },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.black },
+  radioOn: { borderColor: Colors.ink },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.ink },
   tip: {
     height: 42,
     paddingHorizontal: 14,
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.line,
   },
-  tipOn: { backgroundColor: Colors.black, borderColor: Colors.black },
+  tipOn: { backgroundColor: Colors.ink, borderColor: Colors.ink },
   tipInput: { width: 90, fontFamily: Fonts.bodyBold, fontSize: 15, color: Colors.text, textAlign: 'center' },
   couponInput: {
     flex: 1,
@@ -261,3 +262,8 @@ const styles = StyleSheet.create({
   legal: { flexDirection: 'row', gap: 8, padding: 12, borderRadius: Radius.sm, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.line },
   footer: { padding: 16, borderTopWidth: 1, borderTopColor: Colors.line, backgroundColor: Colors.surface },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function CheckoutScreen() {
+  return useRequireLogin() ? <Checkout /> : null;
+}

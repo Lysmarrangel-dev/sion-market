@@ -13,8 +13,9 @@ import { Colors, Fonts, Radius } from '@/constants/theme';
 import { getRestaurant } from '@/data/catalog';
 import { lineTotal, useCart } from '@/store/cart';
 import { goBack } from '@/lib/nav';
+import { useRequireLogin } from '@/lib/auth-gate';
 
-export default function Carrito() {
+function Carrito() {
   const cart = useCart();
   const restaurant = cart.restaurantId ? getRestaurant(cart.restaurantId) : undefined;
 
@@ -76,8 +77,8 @@ export default function Carrito() {
         </View>
         {shortBy > 0 ? (
           <View style={styles.warning}>
-            <Ionicons name="information-circle" size={18} color={Colors.crimson} />
-            <Text style={{ color: Colors.crimson, flex: 1 }}>
+            <Ionicons name="information-circle" size={18} color={Colors.danger} />
+            <Text style={{ color: Colors.danger, flex: 1 }}>
               El pedido mínimo de {restaurant?.name} es {formatUsd(restaurant!.minimumUsd)}. Te faltan {formatUsd(shortBy)}.
             </Text>
           </View>
@@ -108,6 +109,11 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   subtotal: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  warning: { flexDirection: 'row', gap: 8, padding: 12, borderRadius: Radius.sm, backgroundColor: '#FDECEE' },
+  warning: { flexDirection: 'row', gap: 8, padding: 12, borderRadius: Radius.sm, backgroundColor: Colors.dangerSoft },
   footer: { padding: 16, borderTopWidth: 1, borderTopColor: Colors.line, backgroundColor: Colors.surface },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function CarritoScreen() {
+  return useRequireLogin() ? <Carrito /> : null;
+}

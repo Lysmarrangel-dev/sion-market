@@ -10,7 +10,7 @@ const aviso = document.getElementById("aviso");
 activarVerClave();
 conectarMedidor(form.clave, document.getElementById("fuerza"), document.getElementById("reglas-clave"));
 
-if (configurado && (await sesionActual())) window.location.replace("pronto.html");
+if (configurado && (await sesionActual())) window.location.replace("/app");
 
 // Validación al salir de cada campo, sin regañar mientras se escribe
 const validadores = {

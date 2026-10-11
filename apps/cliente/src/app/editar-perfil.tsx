@@ -11,9 +11,10 @@ import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { useProfile } from '@/store/profile';
 import { goBack } from '@/lib/nav';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 // RF-C01 profile: name, verified phone, email and optional photo.
-export default function EditarPerfil() {
+function EditarPerfil() {
   const { profile, update } = useProfile();
   const [name, setName] = useState(profile.name);
   const [email, setEmail] = useState(profile.email);
@@ -101,3 +102,8 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function EditarPerfilScreen() {
+  return useRequireLogin() ? <EditarPerfil /> : null;
+}

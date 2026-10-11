@@ -1,4 +1,5 @@
 import { supabase, configurado, sesionActual } from "./supabase.js";
+import { APP_ESQUEMA, APP_PAQUETE_ANDROID, PLAY_STORE_URL, APP_STORE_URL } from "./config.js";
 import { mostrarAviso, ocultarAviso, cargando, errorCampo, normalizarTelefono, EMAIL_RE, traducirError, escapar } from "./ui.js";
 
 // Borde de la cabecera al desplazarse
@@ -15,6 +16,31 @@ if (configurado) {
     document.querySelectorAll("[data-con-sesion]").forEach((el) => (el.hidden = false));
   });
 }
+
+// "Pedir ahora": en computadora abre la cuenta en la web (/app); en un celular abre la app del teléfono.
+const ua = navigator.userAgent;
+const android = /Android/i.test(ua);
+const ios = /iPhone|iPod|iPad/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+document.querySelectorAll("[data-pedir]").forEach((a) => {
+  if (!android && !ios) return;
+  const web = new URL("/app", location.href).href;
+  if (android) {
+    // Android abre la app si está instalada y, si no, va a la tienda (o a la web mientras no esté publicada).
+    const respaldo = encodeURIComponent(PLAY_STORE_URL || web);
+    a.href = `intent://#Intent;scheme=${APP_ESQUEMA};package=${APP_PAQUETE_ANDROID};S.browser_fallback_url=${respaldo};end`;
+    return;
+  }
+  // En iPhone solo se intenta abrir la app cuando ya está en la App Store; si no, Safari mostraría un error.
+  if (!APP_STORE_URL) return;
+  a.addEventListener("click", (e) => {
+    e.preventDefault();
+    const inicio = Date.now();
+    window.location.href = `${APP_ESQUEMA}://`;
+    setTimeout(() => {
+      if (!document.hidden && Date.now() - inicio < 2500) window.location.href = APP_STORE_URL;
+    }, 1200);
+  });
+});
 
 // Solicitud de afiliación de comercios
 const form = document.getElementById("form-comercio");

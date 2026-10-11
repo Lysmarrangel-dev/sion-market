@@ -58,5 +58,5 @@ form.addEventListener("submit", async (e) => {
   boton.innerHTML = "Contraseña guardada";
   mostrarAviso(aviso, "exito", "Listo, tu contraseña nueva quedó guardada. Te llevamos a tu cuenta.");
   sessionStorage.removeItem("sm-email");
-  setTimeout(() => window.location.replace("pronto.html"), 1600);
+  setTimeout(() => window.location.replace("/app"), 1600);
 });

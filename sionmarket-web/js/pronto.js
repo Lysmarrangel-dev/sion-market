@@ -1,5 +1,5 @@
 import { urlInicial } from "./captura-url.js";
-import { supabase, configurado, sesionActual, urlDe } from "./supabase.js";
+import { supabase, configurado, sesionActual, urlDe, APP } from "./supabase.js";
 import { mostrarAviso, ocultarAviso, cargando, errorCampo, normalizarTelefono, traducirError, escapar, enfriar } from "./ui.js";
 
 const vistas = ["cargando", "confirmar", "cuenta"].reduce((o, n) => ({ ...o, [n]: document.getElementById(`vista-${n}`) }), {});
@@ -68,11 +68,7 @@ async function mostrarCuenta(s) {
     window.location.replace("index.html");
   });
 
-  if (nombre) document.getElementById("titulo-cuenta").textContent = `Hola, ${nombre}. Ya tienes tu lugar.`;
-  if (params.get("bienvenida")) {
-    document.getElementById("texto-cuenta").textContent =
-      "Tu cuenta quedó creada. Sionmarket abre muy pronto en San Felipe y te avisamos el día del lanzamiento para que hagas tu primer pedido.";
-  }
+  if (nombre) document.getElementById("titulo-cuenta").textContent = `Hola, ${nombre}. Ya casi terminas.`;
   history.replaceState(null, "", "pronto.html");
 
   const form = document.getElementById("form-intereses");
@@ -82,6 +78,8 @@ async function mostrarCuenta(s) {
   // Datos faltantes (cuentas de Google o perfiles incompletos)
   const faltaTelefono = !perfil?.telefono;
   const faltaTerminos = !perfil?.acepta_terminos_en;
+  // Con la cuenta completa no hay nada que hacer aquí: la cuenta del cliente es la app web.
+  if (!error && !faltaTelefono && !faltaTerminos) return window.location.replace(APP);
   document.getElementById("datos-faltantes").hidden = !(faltaTelefono || faltaTerminos);
   document.getElementById("campo-telefono").hidden = !faltaTelefono;
   document.getElementById("campo-terminos").hidden = !faltaTerminos;
@@ -114,8 +112,6 @@ async function mostrarCuenta(s) {
 
     if (err) return mostrarAviso(aviso, "error", escapar(traducirError(err)));
     sessionStorage.removeItem("sm-terminos-google");
-    mostrarAviso(aviso, "exito", intereses.length
-      ? "Guardado. Te avisamos primero de lo que elegiste."
-      : "Guardado. Te avisamos cuando abramos.");
+    window.location.replace(APP);
   });
 }

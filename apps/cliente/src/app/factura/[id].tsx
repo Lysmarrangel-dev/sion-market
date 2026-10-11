@@ -10,9 +10,10 @@ import { Text } from '@/components/text';
 import { Colors, Radius } from '@/constants/theme';
 import { getRestaurant } from '@/data/catalog';
 import { useOrders } from '@/store/orders';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 // RF-C08: delivery-service invoice issued by the platform. The fiscal number will come from the e-invoicing provider.
-export default function Factura() {
+function Factura() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { get } = useOrders();
   const order = get(id);
@@ -78,3 +79,8 @@ const styles = StyleSheet.create({
   sep: { height: 1, backgroundColor: Colors.line, marginVertical: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function FacturaScreen() {
+  return useRequireLogin() ? <Factura /> : null;
+}

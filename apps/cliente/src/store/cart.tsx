@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import { findCoupon, getRestaurant, type ModifierOption, type Product } from '@/data/catalog';
+import { online } from '@/lib/api';
 import { usePersistentState } from '@/lib/persist';
 
 export type SelectedOption = ModifierOption & { groupId: string; groupName: string };
@@ -80,7 +81,7 @@ const lineKey = (line: Omit<CartLine, 'key'>) =>
   `${line.product.id}:${line.options.map((o) => o.id).sort().join(',')}:${line.note ?? ''}`;
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = usePersistentState<CartState>('cart', EMPTY);
+  const [state, setState] = usePersistentState<CartState>(online ? 'carrito' : 'cart', EMPTY);
 
   const value = useMemo<CartContextValue>(
     () => ({

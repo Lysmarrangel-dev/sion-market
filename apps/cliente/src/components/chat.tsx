@@ -92,7 +92,7 @@ export function Chat({
                 <Ionicons
                   name={item.status === 'enviado' ? 'checkmark' : 'checkmark-done'}
                   size={14}
-                  color={item.status === 'leido' ? Colors.crimson : 'rgba(0,0,0,0.5)'}
+                  color={item.status === 'leido' ? Colors.danger : 'rgba(0,0,0,0.5)'}
                 />
                 <Text style={{ fontSize: 11, color: 'rgba(0,0,0,0.6)' }}>{item.status === 'leido' ? 'Leído' : item.status === 'entregado' ? 'Entregado' : 'Enviado'}</Text>
               </View>

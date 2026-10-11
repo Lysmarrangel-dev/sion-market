@@ -15,3 +15,11 @@ export const GOOGLE_HABILITADO = false;
 
 /** Ciudad de operación inicial (coincide con la tabla public.ciudades). */
 export const CIUDAD_INICIAL = "san-felipe";
+
+/** App del teléfono. Desde un celular, "Pedir ahora" abre la app si está instalada.
+ *  Cuando la publiques, pon aquí los enlaces de las tiendas: si la app no está
+ *  instalada, el celular va a la tienda; mientras estén vacíos, sigue en la web. */
+export const APP_ESQUEMA = "sionmarket";
+export const APP_PAQUETE_ANDROID = "com.sionmarket.app";
+export const PLAY_STORE_URL = "";
+export const APP_STORE_URL = "";

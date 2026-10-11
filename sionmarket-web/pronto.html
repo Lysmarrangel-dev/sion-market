@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Muy pronto · Sionmarket</title>
+  <title>Completa tu cuenta · Sionmarket</title>
   <meta name="theme-color" content="#FB6301">
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/png" href="assets/favicon.png">
@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Montserrat+Alternates:wght@600&display=swap">
   <link rel="stylesheet" href="css/styles.css">
+  <script src="js/tema.js"></script>
   <script type="module" src="js/pronto.js"></script>
 </head>
 <body>
@@ -25,7 +26,8 @@
       </a>
       <div class="usuario" id="usuario" hidden>
         <span class="avatar" id="avatar" aria-hidden="true"></span>
-        <a class="btn btn-primario" href="/app">Abrir la app</a>
+        <a class="btn btn-primario" href="/app">Ir a mi cuenta</a>
+        <button class="btn-tema" type="button" data-tema aria-label="Cambiar tema"></button>
         <button class="btn btn-fantasma" type="button" id="btn-salir">Cerrar sesión</button>
       </div>
     </header>
@@ -59,14 +61,11 @@
       </div>
     </main>
 
-    <!-- Cuenta activa: próximamente -->
+    <!-- Cuenta activa con datos pendientes (solo se ve si faltan; si no, se va directo a la app) -->
     <main class="pronto-cuerpo" id="vista-cuenta" hidden>
       <div>
-        <h1 class="display" id="titulo-cuenta" tabindex="-1">Hola. Ya tienes tu lugar.</h1>
-        <p class="lead" id="texto-cuenta">Sionmarket abre muy pronto en San Felipe. Te avisamos el día del lanzamiento para que hagas tu primer pedido.</p>
-        <div class="carga"><span class="ruedas girando" aria-hidden="true"><i></i><i></i><i></i></span><span>Estamos preparando todo</span></div>
-        <div class="pronto-progreso" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" aria-label="Etapa 1 de 4: piloto"><i></i></div>
-        <div class="pronto-etapas"><b>Piloto</b><span>Viajes</span><span>Asistentes</span><span>Más ciudades</span></div>
+        <h1 class="display" id="titulo-cuenta" tabindex="-1">Hola. Ya casi terminas.</h1>
+        <p class="lead" id="texto-cuenta">Completa estos datos y entras a pedir en los comercios de San Felipe.</p>
       </div>
 
       <form class="tarjeta-intereses" id="form-intereses" novalidate>
@@ -111,7 +110,7 @@
           <input type="checkbox" id="marketing" name="marketing">
           <span>Avísame del lanzamiento y de promociones por WhatsApp o correo.</span>
         </label>
-        <button class="btn btn-primario btn-bloque" type="submit">Guardar preferencias</button>
+        <button class="btn btn-primario btn-bloque" type="submit">Guardar y entrar</button>
       </form>
     </main>
 

@@ -14,7 +14,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 
-import { Colors } from '@/constants/theme';
+import { Colors, theme } from '@/constants/theme';
 import { InAppBanner } from '@/components/in-app-banner';
 import { ScreenFrame, type Frame } from '@/components/screen-frame';
 import { loadCatalog } from '@/data/catalog';
@@ -73,7 +73,7 @@ export default function RootLayout() {
       <AddressProvider>
         <CartProvider>
           <OrdersProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.background } }}
         screenLayout={({ route, children }) => <ScreenFrame frame={FRAMES[route.name] ?? 'page'}>{children}</ScreenFrame>}>

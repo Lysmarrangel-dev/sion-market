@@ -1,26 +1,38 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/text';
-import { Colors, Radius } from '@/constants/theme';
+import { Colors, Radius, setTheme, theme } from '@/constants/theme';
 import { auth } from '@/lib/api';
 import { useAddresses } from '@/store/addresses';
 import { useProfile } from '@/store/profile';
+import { afterLogout } from '@/lib/auth-gate';
+import { LoginPrompt } from '@/components/login-prompt';
+import { online } from '@/lib/api';
+import { useSession } from '@/lib/session';
 
-export default function Perfil() {
+function Perfil() {
   const { profile } = useProfile();
   const { addresses } = useAddresses();
 
-  const items: { icon: keyof typeof Ionicons.glyphMap; label: string; detail?: string; href?: Href }[] = [
+  const items: { icon: keyof typeof Ionicons.glyphMap; label: string; detail?: string; href?: Href; onPress?: () => void }[] = [
     { icon: 'location-outline', label: 'Mis direcciones', detail: `${addresses.length} guardadas`, href: '/direcciones' },
     { icon: 'card-outline', label: 'Métodos de pago', detail: 'Pago Móvil' },
     { icon: 'gift-outline', label: 'Invita y gana', detail: '$2 por amigo', href: '/referidos' },
     { icon: 'notifications-outline', label: 'Notificaciones' },
     { icon: 'help-circle-outline', label: 'Ayuda' },
   ];
+  // On the web the theme is chosen here (and in the top bar); the phone app follows the device.
+  if (Platform.OS === 'web') {
+    items.push({
+      icon: theme === 'dark' ? 'sunny-outline' : 'moon-outline',
+      label: theme === 'dark' ? 'Tema claro' : 'Tema oscuro',
+      onPress: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+    });
+  }
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -38,11 +50,11 @@ export default function Perfil() {
             <Text variant="heading">{profile.name}</Text>
             <Text variant="caption">{profile.phone ? `+58 ${profile.phone.slice(0, 3)} ••• ${profile.phone.slice(-4)}` : 'Teléfono verificado'}</Text>
           </View>
-          <Ionicons name="create-outline" size={22} color={Colors.black} />
+          <Ionicons name="create-outline" size={22} color={Colors.ink} />
         </Pressable>
         <View style={styles.list}>
           {items.map((item, i) => (
-            <Pressable key={item.label} style={[styles.row, i > 0 && styles.divider]} onPress={() => item.href && router.push(item.href)}>
+            <Pressable key={item.label} style={[styles.row, i > 0 && styles.divider]} onPress={() => (item.onPress ? item.onPress() : item.href && router.push(item.href))}>
               <Ionicons name={item.icon} size={22} color={Colors.orangeDeep} />
               <Text variant="bodyStrong" style={{ flex: 1 }}>
                 {item.label}
@@ -54,11 +66,11 @@ export default function Perfil() {
         </View>
         <Pressable style={styles.logout} onPress={async () => {
             await auth.logout();
-            router.replace('/login');
+            afterLogout();
           }}
         >
-          <Ionicons name="log-out-outline" size={20} color={Colors.crimson} />
-          <Text variant="bodyStrong" style={{ color: Colors.crimson }}>
+          <Ionicons name="log-out-outline" size={20} color={Colors.danger} />
+          <Text variant="bodyStrong" style={{ color: Colors.danger }}>
             Cerrar sesión
           </Text>
         </Pressable>
@@ -75,3 +87,11 @@ const styles = StyleSheet.create({
   divider: { borderTopWidth: 1, borderTopColor: Colors.line },
   logout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14 },
 });
+
+export default function PerfilTab() {
+  const session = useSession();
+  if (online && !session) {
+    return <LoginPrompt icon="person" title="Tu cuenta Sionmarket" body="Entra para ver tus direcciones, pagos y referidos." />;
+  }
+  return <Perfil />;
+}

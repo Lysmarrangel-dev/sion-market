@@ -10,11 +10,12 @@ import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { useOrders } from '@/store/orders';
 import { goBack } from '@/lib/nav';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 // RF-C08 problem categories.
 const REASONS = ['Pedido incompleto', 'Producto equivocado', 'Comida en mal estado', 'Entrega tardía', 'Conducta del repartidor', 'Otro'];
 
-export default function Reportar() {
+function Reportar() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { get, report } = useOrders();
   const order = get(id);
@@ -52,7 +53,7 @@ export default function Reportar() {
               <Text variant="bodyStrong" style={{ flex: 1 }}>
                 {r}
               </Text>
-              <Ionicons name={on ? 'radio-button-on' : 'radio-button-off'} size={22} color={on ? Colors.black : Colors.textMuted} />
+              <Ionicons name={on ? 'radio-button-on' : 'radio-button-off'} size={22} color={on ? Colors.ink : Colors.textMuted} />
             </Pressable>
           );
         })}
@@ -88,3 +89,8 @@ const styles = StyleSheet.create({
   },
   done: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 10 },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function ReportarScreen() {
+  return useRequireLogin() ? <Reportar /> : null;
+}

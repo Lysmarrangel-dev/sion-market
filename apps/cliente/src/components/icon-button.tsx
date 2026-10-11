@@ -20,7 +20,7 @@ export function IconButton({
       onPress={onPress}
       hitSlop={8}
       style={({ pressed }) => [styles.btn, light && styles.light, pressed && { opacity: 0.7 }]}>
-      <Ionicons name={name} size={22} color={Colors.black} />
+      <Ionicons name={name} size={22} color={Colors.ink} />
       {badge ? (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{badge}</Text>

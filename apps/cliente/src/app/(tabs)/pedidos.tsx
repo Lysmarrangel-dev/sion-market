@@ -12,11 +12,14 @@ import { isActive, STATUS_INFO } from '@/data/order-states';
 import { confirm } from '@/lib/confirm';
 import { useCart } from '@/store/cart';
 import { useOrders, type Order } from '@/store/orders';
+import { LoginPrompt } from '@/components/login-prompt';
+import { online } from '@/lib/api';
+import { useSession } from '@/lib/session';
 
 const when = (ms: number) =>
   new Date(ms).toLocaleString('es-VE', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 
-export default function Pedidos() {
+function Pedidos() {
   const { orders } = useOrders();
   const cart = useCart();
   const active = orders.filter((o) => isActive(o.status));
@@ -71,7 +74,7 @@ function OrderCard({ order, onPress, children }: { order: Order; onPress: () => 
   const restaurant = getRestaurant(order.restaurantId);
   const done = order.status === 'ENTREGADO';
   const bad = order.status === 'CANCELADO' || order.status === 'RECHAZADO';
-  const color = done ? Colors.success : bad ? Colors.crimson : Colors.orangeDeep;
+  const color = done ? Colors.success : bad ? Colors.danger : Colors.orangeDeep;
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -111,3 +114,11 @@ const styles = StyleSheet.create({
   action: { flex: 1, height: 42, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.line },
   actionPrimary: { backgroundColor: Colors.orange, borderColor: Colors.orange },
 });
+
+export default function PedidosTab() {
+  const session = useSession();
+  if (online && !session) {
+    return <LoginPrompt icon="receipt" title="Tus pedidos aparecen aquí" body="Entra a tu cuenta para pedir y seguir tus pedidos en vivo." />;
+  }
+  return <Pedidos />;
+}

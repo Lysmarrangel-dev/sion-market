@@ -10,13 +10,14 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Colors } from '@/constants/theme';
 import { RIDER } from '@/data/catalog';
 import { useOrders } from '@/store/orders';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 const REPLIES = ['¡Listo! Ya voy en camino 🛵', 'Perfecto, toco el timbre al llegar.', 'Recibido, gracias.', 'Estoy a unas cuadras.'];
 // RF-C07 predefined quick replies.
 const QUICK = ['Estoy en la entrada', 'Toca el timbre', 'Déjalo en la puerta', 'Ya voy bajando'];
 const CHAT_WINDOW_MS = 30 * 60 * 1000;
 
-export default function RiderChat() {
+function RiderChat() {
   const { pedido } = useLocalSearchParams<{ pedido?: string }>();
   const { get } = useOrders();
   const order = pedido ? get(pedido) : undefined;
@@ -58,4 +59,9 @@ export default function RiderChat() {
       />
     </SafeAreaView>
   );
+}
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function RiderChatScreen() {
+  return useRequireLogin() ? <RiderChat /> : null;
 }

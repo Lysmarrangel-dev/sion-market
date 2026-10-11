@@ -9,9 +9,11 @@ import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { ApiRequestError, auth } from '@/lib/api';
 import { goBack } from '@/lib/nav';
+import { useWebsiteLogin } from '@/lib/auth-gate';
 
 /** Email + password, the same account the customer may already have from the website. */
 export default function Correo() {
+  useWebsiteLogin();
   const [mode, setMode] = useState<'entrar' | 'crear'>('entrar');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -78,7 +80,7 @@ export default function Correo() {
 
         <View style={{ gap: 12 }}>
           {error ? (
-            <Text variant="caption" style={{ textAlign: 'center', color: Colors.crimson }}>
+            <Text variant="caption" style={{ textAlign: 'center', color: Colors.danger }}>
               {error}
             </Text>
           ) : notice ? (

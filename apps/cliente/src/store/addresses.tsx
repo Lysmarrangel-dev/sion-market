@@ -42,7 +42,7 @@ export const inCoverage = (location: LatLng) => insidePolygon(location, COVERAGE
 const fromApi = (a: ApiAddress): Address => ({ id: a.id, alias: a.alias, street: a.street, reference: a.reference, location: a.location });
 
 export function AddressProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = usePersistentState<State>('addresses', online ? { list: [], selectedId: null } : { list: SEED, selectedId: 'casa' });
+  const [state, setState] = usePersistentState<State>(online ? 'direcciones' : 'addresses', online ? { list: [], selectedId: null } : { list: SEED, selectedId: 'casa' });
 
   // Online, the server is the source of truth: reload the list whenever the session changes.
   useEffect(() => {

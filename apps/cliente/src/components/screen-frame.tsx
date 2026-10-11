@@ -97,7 +97,7 @@ function BrandPanel() {
 const styles = StyleSheet.create({
   topBar: { backgroundColor: Colors.surface, borderBottomWidth: 1, borderBottomColor: Colors.line },
   topInner: { width: '100%', maxWidth: CONTENT_MAX, alignSelf: 'center', height: 60, paddingHorizontal: 24, justifyContent: 'center' },
-  backdrop: { flex: 1, backgroundColor: '#EFEAE4', alignItems: 'center' },
+  backdrop: { flex: 1, backgroundColor: Colors.backdrop, alignItems: 'center' },
   column: {
     flex: 1,
     width: '100%',

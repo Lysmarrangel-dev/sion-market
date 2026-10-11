@@ -11,8 +11,10 @@ import { Colors, Fonts, Radius } from '@/constants/theme';
 import { ApiRequestError, auth, online } from '@/lib/api';
 import { useLayout } from '@/lib/layout';
 import { useProfile } from '@/store/profile';
+import { useWebsiteLogin } from '@/lib/auth-gate';
 
 export default function Login() {
+  useWebsiteLogin();
   const { update } = useProfile();
   const { width } = useLayout();
   const [phone, setPhone] = useState('');
@@ -122,8 +124,8 @@ export default function Login() {
 
             {error ? (
               <View style={styles.error}>
-                <Ionicons name="alert-circle" size={18} color={Colors.crimson} />
-                <Text variant="caption" style={{ color: Colors.crimson, flex: 1 }}>
+                <Ionicons name="alert-circle" size={18} color={Colors.danger} />
+                <Text variant="caption" style={{ color: Colors.danger, flex: 1 }}>
                   {error}
                 </Text>
               </View>
@@ -184,6 +186,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderRadius: Radius.sm,
-    backgroundColor: '#FDECEE',
+    backgroundColor: Colors.dangerSoft,
   },
 });
