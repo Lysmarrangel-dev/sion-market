@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile --filter=@sionmarket/cliente...",
+  "buildCommand": "npx expo export --platform web",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/producto/:id", "destination": "/producto/[id]" },
+    { "source": "/restaurante/:id", "destination": "/restaurante/[id]" },
+    { "source": "/pedido/:id", "destination": "/pedido/[id]" },
+    { "source": "/calificar/:id", "destination": "/calificar/[id]" },
+    { "source": "/factura/:id", "destination": "/factura/[id]" },
+    { "source": "/reportar/:id", "destination": "/reportar/[id]" }
+  ],
+  "headers": [{ "source": "/_expo/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }]
+}

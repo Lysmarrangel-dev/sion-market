@@ -1,0 +1,38 @@
+{
+  "name": "@sionmarket/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput & node --watch --env-file-if-exists=.env dist/main-api.js",
+    "start": "node dist/main-api.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file-if-exists=.env dist/db/migrate.js",
+    "db:seed": "node --env-file-if-exists=.env dist/db/seed.js",
+    "test": "tsc -p tsconfig.json && node --env-file-if-exists=.env.test --test --test-concurrency=1 \"dist-test/test/**/*.test.js\""
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.1.2",
+    "@nestjs/core": "^12.1.2",
+    "@nestjs/jwt": "^12.0.2",
+    "@nestjs/platform-fastify": "^12.1.2",
+    "@sionmarket/contracts": "workspace:*",
+    "bullmq": "^6.3.12",
+    "drizzle-orm": "^0.45.4",
+    "fastify": "^5.12.5",
+    "ioredis": "^6.0.0",
+    "postgres": "^3.4.9",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "socket.io": "^4.8.4",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.11",
+    "socket.io-client": "^4.8.4",
+    "typescript": "~6.0.3"
+  }
+}

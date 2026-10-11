@@ -1,0 +1,17 @@
+{
+  "name": "sionmarket",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:up": "docker compose -f infra/docker-compose.dev.yml up -d"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.7",
+    "typescript": "~6.0.3"
+  }
+}
