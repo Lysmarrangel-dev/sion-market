@@ -52,7 +52,7 @@ export default function Login() {
           <Text variant="caption" style={{ textAlign: 'center' }}>
             O continúa con
           </Text>
-          {/* RF-C01 alternate sign-up. Demo: these skip straight in; real OAuth needs the backend. */}
+          {/* RF-C01 alternate sign-up. Demo: these skip straight in. Online: email works, Google/Apple pending. */}
           <View style={{ flexDirection: 'row', gap: 10 }}>
             {(
               [
@@ -61,7 +61,17 @@ export default function Login() {
                 ['mail-outline', 'Correo'],
               ] as const
             ).map(([icon, label]) => (
-              <Pressable key={label} style={styles.alt} onPress={() => router.replace('/(tabs)')} accessibilityLabel={`Continuar con ${label}`}>
+              <Pressable
+                key={label}
+                style={styles.alt}
+                onPress={() => {
+                  setError('');
+                  if (!online) return router.replace('/(tabs)');
+                  if (label === 'Correo') return router.push('/correo');
+                  setError(`Entrar con ${label} llega pronto. Por ahora usa tu número o tu correo.`);
+                }}
+                accessibilityLabel={`Continuar con ${label}`}
+              >
                 <Ionicons name={icon} size={20} color={Colors.black} />
                 <Text variant="bodyStrong" style={{ fontSize: 14 }}>
                   {label}

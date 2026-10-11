@@ -6,7 +6,7 @@ import { createDb } from './client.js';
 export async function runMigrations(url: string) {
   const { db, sql } = createDb(url, 1);
   try {
-    await migrate(db, { migrationsFolder: path.join(PACKAGE_ROOT, 'drizzle') });
+    await migrate(db, { migrationsFolder: path.join(PACKAGE_ROOT, 'drizzle'), migrationsSchema: 'sionmarket' });
   } finally {
     await sql.end();
   }

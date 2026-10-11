@@ -5,5 +5,7 @@ export default defineConfig({
   schema: './src/db/schema.ts',
   out: './drizzle',
   extensionsFilters: ['postgis'],
+  schemaFilter: ['sionmarket'],
+  migrations: { schema: 'sionmarket' },
   dbCredentials: { url: process.env.DATABASE_URL ?? 'postgres://sionmarket:sionmarket@localhost:5432/sionmarket' },
 });

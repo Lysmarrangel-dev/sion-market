@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
-import { DEMO_PHONES } from '../src/db/seed.js';
-import { setup } from './helpers.js';
+import { DEMO_USERS } from '../src/db/seed.js';
+import { setup, signIn } from './helpers.js';
 
 let ctx: Awaited<ReturnType<typeof setup>>;
 before(async () => {
@@ -16,19 +16,15 @@ const inside = { latitude: 10.3399, longitude: -68.7425 };
 const outside = { latitude: 10.5, longitude: -66.9 }; // Caracas
 
 describe('sesión', () => {
-  test('OTP equivocado se rechaza', async () => {
-    await ctx.api.call('POST', '/auth/otp', { phone: CUSTOMER });
-    const res = await ctx.api.call('POST', '/auth/otp/verificar', { phone: CUSTOMER, code: '000000' });
+  test('un token con otra firma se rechaza', async () => {
+    const res = await ctx.api.call('GET', '/yo', undefined, (await signIn(CUSTOMER)).accessToken.slice(0, -4) + 'AAAA');
     assert.equal(res.status, 401);
-    assert.equal(res.body.code, 'OTP_INVALID');
   });
 
-  test('refresh rota el token: el viejo deja de servir', async () => {
-    const { refreshToken } = await ctx.api.login(CUSTOMER);
-    const first = await ctx.api.call('POST', '/auth/refresh', { refreshToken });
-    assert.equal(first.status, 200);
-    const again = await ctx.api.call('POST', '/auth/refresh', { refreshToken });
-    assert.equal(again.status, 401);
+  test('la primera petición crea el perfil a partir del token', async () => {
+    const res = await ctx.api.call('GET', '/yo', undefined, (await signIn(CUSTOMER)).accessToken);
+    assert.equal(res.status, 200);
+    assert.equal(res.body.phone, CUSTOMER);
   });
 
   test('rutas privadas piden sesión', async () => {
@@ -126,9 +122,9 @@ describe('pedido de punta a punta', () => {
   });
 
   test('restaurante → repartidor → entregado', async () => {
-    const resto = (await ctx.api.login(DEMO_PHONES.restaurant)).accessToken;
-    const admin = (await ctx.api.login(DEMO_PHONES.admin)).accessToken;
-    const rider = await ctx.api.login(DEMO_PHONES.rider);
+    const resto = (await ctx.api.login(DEMO_USERS.restaurant.phone)).accessToken;
+    const admin = (await ctx.api.login(DEMO_USERS.admin.phone)).accessToken;
+    const rider = await ctx.api.login(DEMO_USERS.rider.phone);
 
     const inbox = await ctx.api.call('GET', '/restaurantes/la-parrilla-yaracuy/pedidos?estado=PENDIENTE', undefined, resto);
     assert.equal(inbox.body.length, 1);

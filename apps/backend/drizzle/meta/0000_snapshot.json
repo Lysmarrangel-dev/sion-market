@@ -1,12 +1,12 @@
 {
-  "id": "832e0d7b-f6be-443e-be32-04ce60669dff",
+  "id": "0b5a020d-ee34-42fe-9ea8-0eb05f26720e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.addresses": {
+    "sionmarket.addresses": {
       "name": "addresses",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -87,6 +87,7 @@
           "name": "addresses_user_id_users_id_fk",
           "tableFrom": "addresses",
           "tableTo": "users",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "user_id"
           ],
@@ -100,6 +101,7 @@
           "name": "addresses_zone_id_zones_id_fk",
           "tableFrom": "addresses",
           "tableTo": "zones",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "zone_id"
           ],
@@ -116,9 +118,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.categories": {
+    "sionmarket.categories": {
       "name": "categories",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -154,9 +156,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.coupons": {
+    "sionmarket.coupons": {
       "name": "coupons",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "code": {
           "name": "code",
@@ -204,9 +206,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.coverage_waitlist": {
+    "sionmarket.coverage_waitlist": {
       "name": "coverage_waitlist",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -241,6 +243,7 @@
           "name": "coverage_waitlist_user_id_users_id_fk",
           "tableFrom": "coverage_waitlist",
           "tableTo": "users",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "user_id"
           ],
@@ -257,9 +260,78 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.exchange_rates": {
+    "sionmarket.device_tokens": {
+      "name": "device_tokens",
+      "schema": "sionmarket",
+      "columns": {
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "platform": {
+          "name": "platform",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "device_tokens_user_idx": {
+          "name": "device_tokens_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "device_tokens_user_id_users_id_fk": {
+          "name": "device_tokens_user_id_users_id_fk",
+          "tableFrom": "device_tokens",
+          "tableTo": "users",
+          "schemaTo": "sionmarket",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "sionmarket.exchange_rates": {
       "name": "exchange_rates",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -295,9 +367,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.modifier_groups": {
+    "sionmarket.modifier_groups": {
       "name": "modifier_groups",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -345,6 +417,7 @@
           "name": "modifier_groups_restaurant_id_restaurants_id_fk",
           "tableFrom": "modifier_groups",
           "tableTo": "restaurants",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "restaurant_id"
           ],
@@ -361,9 +434,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.modifier_options": {
+    "sionmarket.modifier_options": {
       "name": "modifier_options",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -404,6 +477,7 @@
           "name": "modifier_options_group_id_modifier_groups_id_fk",
           "tableFrom": "modifier_options",
           "tableTo": "modifier_groups",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "group_id"
           ],
@@ -420,9 +494,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.order_items": {
+    "sionmarket.order_items": {
       "name": "order_items",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -495,6 +569,7 @@
           "name": "order_items_order_id_orders_id_fk",
           "tableFrom": "order_items",
           "tableTo": "orders",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "order_id"
           ],
@@ -511,9 +586,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.order_status_events": {
+    "sionmarket.order_status_events": {
       "name": "order_status_events",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -587,6 +662,7 @@
           "name": "order_status_events_order_id_orders_id_fk",
           "tableFrom": "order_status_events",
           "tableTo": "orders",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "order_id"
           ],
@@ -603,9 +679,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.orders": {
+    "sionmarket.orders": {
       "name": "orders",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -795,6 +871,7 @@
           "name": "orders_customer_id_users_id_fk",
           "tableFrom": "orders",
           "tableTo": "users",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "customer_id"
           ],
@@ -808,6 +885,7 @@
           "name": "orders_restaurant_id_restaurants_id_fk",
           "tableFrom": "orders",
           "tableTo": "restaurants",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "restaurant_id"
           ],
@@ -821,6 +899,7 @@
           "name": "orders_rider_id_users_id_fk",
           "tableFrom": "orders",
           "tableTo": "users",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "rider_id"
           ],
@@ -834,6 +913,7 @@
           "name": "orders_zone_id_zones_id_fk",
           "tableFrom": "orders",
           "tableTo": "zones",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "zone_id"
           ],
@@ -858,89 +938,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.otp_codes": {
-      "name": "otp_codes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "phone": {
-          "name": "phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "code_hash": {
-          "name": "code_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "attempts": {
-          "name": "attempts",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "consumed_at": {
-          "name": "consumed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "otp_phone_created_idx": {
-          "name": "otp_phone_created_idx",
-          "columns": [
-            {
-              "expression": "phone",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.outbox_events": {
+    "sionmarket.outbox_events": {
       "name": "outbox_events",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -1005,9 +1005,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.product_modifier_groups": {
+    "sionmarket.product_modifier_groups": {
       "name": "product_modifier_groups",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "product_id": {
           "name": "product_id",
@@ -1035,6 +1035,7 @@
           "name": "product_modifier_groups_product_id_products_id_fk",
           "tableFrom": "product_modifier_groups",
           "tableTo": "products",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "product_id"
           ],
@@ -1048,6 +1049,7 @@
           "name": "product_modifier_groups_group_id_modifier_groups_id_fk",
           "tableFrom": "product_modifier_groups",
           "tableTo": "modifier_groups",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "group_id"
           ],
@@ -1072,9 +1074,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.products": {
+    "sionmarket.products": {
       "name": "products",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -1163,6 +1165,7 @@
           "name": "products_restaurant_id_restaurants_id_fk",
           "tableFrom": "products",
           "tableTo": "restaurants",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "restaurant_id"
           ],
@@ -1179,82 +1182,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.refresh_tokens": {
-      "name": "refresh_tokens",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "token_hash": {
-          "name": "token_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "revoked_at": {
-          "name": "revoked_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "refresh_tokens_user_id_users_id_fk": {
-          "name": "refresh_tokens_user_id_users_id_fk",
-          "tableFrom": "refresh_tokens",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "refresh_tokens_token_hash_unique": {
-          "name": "refresh_tokens_token_hash_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.restaurants": {
+    "sionmarket.restaurants": {
       "name": "restaurants",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -1419,6 +1349,7 @@
           "name": "restaurants_category_id_categories_id_fk",
           "tableFrom": "restaurants",
           "tableTo": "categories",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "category_id"
           ],
@@ -1432,6 +1363,7 @@
           "name": "restaurants_zone_id_zones_id_fk",
           "tableFrom": "restaurants",
           "tableTo": "zones",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "zone_id"
           ],
@@ -1445,6 +1377,7 @@
           "name": "restaurants_owner_user_id_users_id_fk",
           "tableFrom": "restaurants",
           "tableTo": "users",
+          "schemaTo": "sionmarket",
           "columnsFrom": [
             "owner_user_id"
           ],
@@ -1461,31 +1394,30 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.users": {
+    "sionmarket.users": {
       "name": "users",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "phone": {
           "name": "phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
         "email": {
           "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1527,9 +1459,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.zones": {
+    "sionmarket.zones": {
       "name": "zones",
-      "schema": "",
+      "schema": "sionmarket",
       "columns": {
         "id": {
           "name": "id",
@@ -1574,7 +1506,9 @@
     }
   },
   "enums": {},
-  "schemas": {},
+  "schemas": {
+    "sionmarket": "sionmarket"
+  },
   "sequences": {},
   "roles": {},
   "policies": {},

@@ -4,11 +4,10 @@ const Env = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().url(),
-  JWT_SECRET: z.string().min(32),
-  ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().default(15 * 60),
-  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().default(30),
-  /** Fixed OTP for development and tests. Must be empty in production. */
-  OTP_DEV_CODE: z.string().regex(/^\d{6}$/).optional(),
+  /** Supabase project URL, e.g. https://xxxx.supabase.co. Used to verify tokens via JWKS. */
+  SUPABASE_URL: z.string().url().optional(),
+  /** Legacy JWT secret (HS256). Only for projects still on the shared secret, and for tests. */
+  SUPABASE_JWT_SECRET: z.string().min(32).optional(),
   CORS_ORIGINS: z.string().default('*'),
   REDIS_URL: z.string().default('redis://localhost:6379'),
   REALTIME_PORT: z.coerce.number().default(3001),
@@ -30,8 +29,8 @@ export function config(): Config {
     console.error('Variables de entorno inválidas:', z.prettifyError(parsed.error));
     process.exit(1);
   }
-  if (parsed.data.NODE_ENV === 'production' && parsed.data.OTP_DEV_CODE) {
-    console.error('OTP_DEV_CODE no puede estar definido en producción');
+  if (!parsed.data.SUPABASE_URL && !parsed.data.SUPABASE_JWT_SECRET) {
+    console.error('Define SUPABASE_URL (o SUPABASE_JWT_SECRET) para verificar las sesiones');
     process.exit(1);
   }
   cached = parsed.data;

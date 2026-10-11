@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/text';
 import { Colors, Radius } from '@/constants/theme';
+import { auth } from '@/lib/api';
 import { useAddresses } from '@/store/addresses';
 import { useProfile } from '@/store/profile';
 
@@ -51,7 +52,11 @@ export default function Perfil() {
             </Pressable>
           ))}
         </View>
-        <Pressable style={styles.logout} onPress={() => router.replace('/login')}>
+        <Pressable style={styles.logout} onPress={async () => {
+            await auth.logout();
+            router.replace('/login');
+          }}
+        >
           <Ionicons name="log-out-outline" size={20} color={Colors.crimson} />
           <Text variant="bodyStrong" style={{ color: Colors.crimson }}>
             Cerrar sesión

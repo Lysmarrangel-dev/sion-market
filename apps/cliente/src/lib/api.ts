@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { ApiError, AuthTokens } from '@sionmarket/contracts';
+import type { ApiError } from '@sionmarket/contracts';
+import { createClient, type Session as SupabaseSession } from '@supabase/supabase-js';
+import { AppState, Platform } from 'react-native';
 
 /**
  * SionMarket API client. Without EXPO_PUBLIC_API_URL the app runs in demo mode on the
@@ -7,9 +9,34 @@ import type { ApiError, AuthTokens } from '@sionmarket/contracts';
  */
 export const API_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
 export const REALTIME_URL = process.env.EXPO_PUBLIC_REALTIME_URL?.replace(/\/$/, '') ?? API_URL.replace(/\/v1$/, '');
-export const online = API_URL.length > 0;
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+export const online = API_URL.length > 0 && SUPABASE_URL.length > 0;
+if (API_URL && !online) console.warn('EXPO_PUBLIC_SUPABASE_URL falta: la app sigue en modo demo.');
 
-const SESSION_KEY = 'sionmarket:session';
+/**
+ * Sign-in is handled by Supabase Auth (same project as the website). The API only checks
+ * the Supabase access token; roles and profile live in our own backend.
+ */
+export const supabase = online
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        // On web the browser's localStorage is used; AsyncStorage touches `window` during static render.
+        storage: Platform.OS === 'web' ? undefined : AsyncStorage,
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+      },
+    })
+  : null;
+
+// Refresh tokens only while the app is in the foreground, as Supabase recommends for React Native.
+if (supabase && Platform.OS !== 'web') {
+  AppState.addEventListener('change', (state) => {
+    if (state === 'active') supabase.auth.startAutoRefresh();
+    else supabase.auth.stopAutoRefresh();
+  });
+}
 
 export class ApiRequestError extends Error {
   constructor(
@@ -21,7 +48,7 @@ export class ApiRequestError extends Error {
   }
 }
 
-type Session = Pick<AuthTokens, 'accessToken' | 'refreshToken' | 'user'>;
+type Session = { accessToken: string; user: { id: string; phone?: string; email?: string } };
 let session: Session | null = null;
 const listeners = new Set<(s: Session | null) => void>();
 
@@ -34,17 +61,21 @@ export function onSessionChange(listener: (s: Session | null) => void) {
   };
 }
 
-async function setSession(next: Session | null) {
-  session = next;
-  if (next) await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(next));
-  else await AsyncStorage.removeItem(SESSION_KEY);
-  listeners.forEach((l) => l(next));
+function apply(next: SupabaseSession | null) {
+  session = next
+    ? { accessToken: next.access_token, user: { id: next.user.id, phone: next.user.phone, email: next.user.email } }
+    : null;
+  listeners.forEach((l) => l(session));
 }
 
+supabase?.auth.onAuthStateChange((event, next) => {
+  if (event !== 'INITIAL_SESSION') apply(next);
+});
+
 export async function restoreSession() {
-  const raw = await AsyncStorage.getItem(SESSION_KEY).catch(() => null);
-  session = raw ? (JSON.parse(raw) as Session) : null;
-  listeners.forEach((l) => l(session));
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession();
+  apply(data.session);
   return session;
 }
 
@@ -58,31 +89,12 @@ async function raw<T>(method: string, path: string, body?: unknown, token?: stri
   return { status: res.status, data: (text ? JSON.parse(text) : null) as T };
 }
 
-// Several requests can hit a 401 at once; they share one refresh.
-let refreshing: Promise<boolean> | null = null;
-
-async function refresh() {
-  const current = session;
-  if (!current) return false;
-  refreshing ??= raw<AuthTokens>('POST', '/auth/refresh', { refreshToken: current.refreshToken })
-    .then(async ({ status, data }) => {
-      if (status !== 200) {
-        await setSession(null);
-        return false;
-      }
-      await setSession({ accessToken: data.accessToken, refreshToken: data.refreshToken, user: data.user });
-      return true;
-    })
-    .finally(() => {
-      refreshing = null;
-    });
-  return refreshing;
-}
-
 export async function api<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
   let res = await raw<T | ApiError>(method, path, body, session?.accessToken);
-  if (res.status === 401 && session && (await refresh())) {
-    res = await raw<T | ApiError>(method, path, body, session?.accessToken);
+  if (res.status === 401 && session && supabase) {
+    // The token may have expired while the app slept: refresh once and retry.
+    const { data } = await supabase.auth.refreshSession();
+    if (data.session) res = await raw<T | ApiError>(method, path, body, data.session.access_token);
   }
   if (res.status >= 400) {
     const err = res.data as ApiError | null;
@@ -91,15 +103,48 @@ export async function api<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: 
   return res.data as T;
 }
 
+const AUTH_MESSAGES: Record<string, string> = {
+  invalid_credentials: 'Correo o clave incorrectos.',
+  email_not_confirmed: 'Confirma tu correo con el enlace que te enviamos y vuelve a intentar.',
+  user_already_exists: 'Ya existe una cuenta con ese correo. Entra con tu clave.',
+  weak_password: 'Esa clave es muy débil. Usa al menos 6 caracteres.',
+  otp_expired: 'El código no es válido o ya venció.',
+  over_request_rate_limit: 'Demasiados intentos. Espera un momento y vuelve a intentar.',
+  over_sms_send_rate_limit: 'Demasiados intentos. Espera un momento y vuelve a intentar.',
+  over_email_send_rate_limit: 'Demasiados intentos. Espera un momento y vuelve a intentar.',
+  phone_provider_disabled: 'Todavía no podemos enviar SMS. Entra con tu correo mientras tanto.',
+  sms_send_failed: 'No pudimos enviar el SMS. Revisa el número o entra con tu correo.',
+};
+
+/** Turns Supabase's error codes into something a customer can act on. */
+function authError(e: { code?: string; status?: number } | null) {
+  if (!e) return;
+  throw new ApiRequestError(e.status ?? 400, 'AUTH', AUTH_MESSAGES[e.code ?? ''] ?? 'No pudimos iniciar sesión. Revisa tu conexión.');
+}
+
 export const auth = {
-  requestOtp: (phone: string) => api<{ sent: boolean }>('POST', '/auth/otp', { phone }),
-  async verifyOtp(phone: string, code: string) {
-    const tokens = await api<AuthTokens>('POST', '/auth/otp/verificar', { phone, code });
-    await setSession({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken, user: tokens.user });
-    return tokens.user;
+  async requestOtp(phone: string) {
+    const { error } = await supabase!.auth.signInWithOtp({ phone });
+    authError(error);
+  },
+  async verifyOtp(phone: string, token: string) {
+    const { data, error } = await supabase!.auth.verifyOtp({ phone, token, type: 'sms' });
+    authError(error);
+    apply(data.session);
+  },
+  async signInWithEmail(email: string, password: string) {
+    const { data, error } = await supabase!.auth.signInWithPassword({ email, password });
+    authError(error);
+    apply(data.session);
+  },
+  async signUpWithEmail(email: string, password: string) {
+    const { data, error } = await supabase!.auth.signUp({ email, password });
+    authError(error);
+    if (data.session) apply(data.session);
+    return { needsConfirmation: !data.session };
   },
   async logout() {
-    if (session) await raw('POST', '/auth/logout', { refreshToken: session.refreshToken }).catch(() => {});
-    await setSession(null);
+    if (supabase) await supabase.auth.signOut().catch(() => {});
+    apply(null);
   },
 };

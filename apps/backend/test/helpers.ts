@@ -1,17 +1,19 @@
+import { createHash } from 'node:crypto';
 import { Redis } from 'ioredis';
+import { SignJWT } from 'jose';
 import postgres from 'postgres';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { createApp } from '../src/app.js';
 import { createDb } from '../src/db/client.js';
 import { runMigrations } from '../src/db/migrate.js';
-import { seed } from '../src/db/seed.js';
+import { DEMO_USERS, seed } from '../src/db/seed.js';
 
 /** Fresh database + app for an end-to-end test file. */
 export async function setup() {
   const url = process.env.DATABASE_URL!;
   if (!url.includes('test')) throw new Error('Las pruebas solo corren contra una base *_test');
   const admin = postgres(url, { max: 1, onnotice: () => {} });
-  await admin.unsafe('drop schema if exists public cascade; drop schema if exists drizzle cascade; create schema public;');
+  await admin.unsafe('drop schema if exists sionmarket cascade; drop schema if exists drizzle cascade;');
   await admin.end();
   await runMigrations(url);
   const { db, sql } = createDb(url, 1);
@@ -42,11 +44,26 @@ export function client(app: NestFastifyApplication) {
   };
   return {
     call,
-    async login(phone: string) {
-      await call('POST', '/auth/otp', { phone });
-      const res = await call('POST', '/auth/otp/verificar', { phone, code: process.env.OTP_DEV_CODE });
-      if (res.status !== 200) throw new Error(`login falló: ${JSON.stringify(res.body)}`);
-      return res.body as { accessToken: string; refreshToken: string; user: { id: string } };
-    },
+    login: signIn,
   };
+}
+
+/** Mints a token shaped like the ones Supabase Auth issues, signed with the test secret. */
+export async function signIn(phone: string) {
+  const demo = Object.values(DEMO_USERS).find((u) => u.phone === phone);
+  const id = demo?.id ?? uuidFrom(phone);
+  const accessToken = await new SignJWT({ role: 'authenticated', phone: phone.replace(/^\+/, '') })
+    .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
+    .setSubject(id)
+    .setAudience('authenticated')
+    .setIssuer(`${process.env.SUPABASE_URL}/auth/v1`)
+    .setIssuedAt()
+    .setExpirationTime('1h')
+    .sign(new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!));
+  return { accessToken, user: { id } };
+}
+
+function uuidFrom(text: string) {
+  const h = createHash('sha256').update(text).digest('hex');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`;
 }

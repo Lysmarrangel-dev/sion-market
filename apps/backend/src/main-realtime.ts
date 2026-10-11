@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { Redis } from 'ioredis';
 import { config } from './config.js';
+import { SupabaseTokenVerifier } from './common/supabase-auth.js';
 import { createDb } from './db/client.js';
 import { createRealtimeServer } from './realtime/server.js';
 
@@ -16,7 +17,7 @@ const rt = createRealtimeServer({
   http,
   db,
   redis,
-  jwtSecret: cfg.JWT_SECRET,
+  verifier: new SupabaseTokenVerifier({ supabaseUrl: cfg.SUPABASE_URL, jwtSecret: cfg.SUPABASE_JWT_SECRET }),
   corsOrigin: cfg.CORS_ORIGINS === '*' ? true : cfg.CORS_ORIGINS.split(','),
 });
 await rt.ready;
