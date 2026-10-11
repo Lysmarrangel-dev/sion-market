@@ -47,7 +47,7 @@ export function WebNav({ state, descriptors, navigation }: BottomTabBarProps) {
                   const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
                   if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
                 }}
-                style={({ hovered }: { hovered?: boolean }) => [styles.link, (focused || hovered) && styles.linkOn]}>
+                style={[styles.link, focused && styles.linkOn]}>
                 <Ionicons
                   name={focused ? ICONS[route.name] : (`${ICONS[route.name]}-outline` as keyof typeof Ionicons.glyphMap)}
                   size={18}
