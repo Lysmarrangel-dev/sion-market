@@ -11,6 +11,43 @@ teléfono / web ──HTTPS──► api.tudominio.com (nginx) ──► api ×2
 
 Tiempo estimado: una hora la primera vez. Después, cada cambio que se una a `main` se publica solo.
 
+## Prueba rápida en Railway
+
+Antes de la VPS puedes probar todo en [Railway](https://railway.com). Railway pone HTTPS y dominios solo,
+así que aquí no hacen falta nginx ni certbot. La configuración de cada servicio ya está en `infra/railway/`.
+
+1. **Nuevo proyecto** → *Deploy from GitHub repo* → `Lysmarrangel-dev/sion-market`. Railway crea un servicio;
+   llámalo `api`.
+2. En el mismo proyecto: *+ New* → *Database* → **Redis**.
+3. Crea dos servicios más desde el mismo repo (*+ New* → *GitHub Repo*) y llámalos `realtime` y `worker`.
+4. En cada servicio → *Settings* → *Config-as-code* → **Railway Config File**, pon la ruta:
+   `infra/railway/api.json`, `infra/railway/realtime.json` y `infra/railway/worker.json`.
+5. **Variables.** En el proyecto → *Settings* → *Shared Variables* crea estas y compártelas con los tres servicios:
+
+   | Nombre | Valor |
+   |---|---|
+   | `NODE_ENV` | `production` |
+   | `DATABASE_URL` | la cadena *Session pooler* de Supabase (puerto 5432) |
+   | `SUPABASE_URL` | `https://oqaaxsuhtpmjnwuyqkzd.supabase.co` |
+   | `REDIS_URL` | `${{Redis.REDIS_URL}}` |
+   | `CORS_ORIGINS` | el dominio de la web en Vercel |
+   | `PUSH_ENABLED` | `true` |
+
+   Y solo en el servicio `realtime` agrega `PORT=3001` y `REALTIME_PORT=3001`.
+6. **Dominios.** En `api` y en `realtime` → *Settings* → *Networking* → **Generate Domain**. El `worker` no lleva dominio.
+7. Al desplegar, `api` crea las tablas en Supabase antes de arrancar. Comprueba:
+   `https://<dominio-api>/v1/salud` → `{"ok":true}` y `https://<dominio-realtime>/salud` → `{"ok":true}`.
+8. En Vercel (paso 9 de abajo) usa `EXPO_PUBLIC_API_URL=https://<dominio-api>/v1` y
+   `EXPO_PUBLIC_REALTIME_URL=https://<dominio-realtime>`.
+
+Para los datos demo y los roles, en el servicio `api` abre la consola (*⋯* → *Shell*) y corre
+`node dist/db/seed.js` o `node dist/db/rol.js --correo … --rol restaurante --restaurante …`.
+
+Cada cambio que se una a `main` en el backend vuelve a desplegar los tres servicios. Cuando pases a la VPS,
+borra el proyecto de Railway para no pagar dos veces; Supabase se queda igual.
+
+## En tu VPS
+
 ## 1. Contratar el servidor
 
 - **Sistema:** Ubuntu 24.04.
