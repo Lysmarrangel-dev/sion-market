@@ -1,0 +1,64 @@
+# Compila el APK de prueba de la app del cliente (apps/cliente) sin cuenta de Expo.
+# En un PR queda como artefacto del run; al unir a main se publica en la release "android-latest":
+# https://github.com/Lysmarrangel-dev/sion-market/releases/download/android-latest/sionmarket.apk
+name: android
+on:
+  pull_request:
+    paths: ['apps/cliente/**', 'packages/**', 'pnpm-lock.yaml', '.github/workflows/android.yml']
+  push:
+    branches: [main]
+    paths: ['apps/cliente/**', 'packages/**', 'pnpm-lock.yaml', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    env:
+      EXPO_PUBLIC_API_URL: https://api.sionmarket.app/v1
+      EXPO_PUBLIC_REALTIME_URL: https://api.sionmarket.app
+      EXPO_PUBLIC_SUPABASE_URL: https://oqaaxsuhtpmjnwuyqkzd.supabase.co
+      # La llave "anon" es pública por diseño (la misma de sionmarket-web/js/config.js).
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xYWF4c3VodHBtam53dXlxa3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMjY5OTcsImV4cCI6MjEwNjYwMjk5N30.lLuwcH7-P0_AUxRQ_KqKoSi6SbTbJjYcGxPp-nGFWHk
+      # Opcional: sin este secreto los mapas del APK usan OpenStreetMap.
+      GOOGLE_MAPS_ANDROID_KEY: ${{ secrets.GOOGLE_MAPS_ANDROID_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - run: pnpm install --frozen-lockfile
+      - name: Generar el proyecto Android
+        working-directory: apps/cliente
+        run: npx expo prebuild --platform android --no-install --clean
+      - name: Compilar el APK
+        working-directory: apps/cliente/android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+      - run: cp apps/cliente/android/app/build/outputs/apk/release/app-release.apk sionmarket.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sionmarket-apk
+          path: sionmarket.apk
+      - name: Publicar en la release android-latest
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notas="APK de prueba de SionMarket, compilado desde ${GITHUB_SHA::7}. Instálalo en Android permitiendo apps de origen desconocido."
+          if gh release view android-latest >/dev/null 2>&1; then
+            gh release upload android-latest sionmarket.apk --clobber
+            gh release edit android-latest --notes "$notas"
+          else
+            gh release create android-latest sionmarket.apk --prerelease --title "SionMarket Android (prueba)" --notes "$notas"
+          fi
