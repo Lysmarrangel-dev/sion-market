@@ -13,6 +13,7 @@ import { afterLogout } from '@/lib/auth-gate';
 import { LoginPrompt } from '@/components/login-prompt';
 import { online } from '@/lib/api';
 import { useSession } from '@/lib/session';
+import { canManage } from '@/lib/panel';
 
 function Perfil() {
   const { profile } = useProfile();
@@ -25,6 +26,9 @@ function Perfil() {
     { icon: 'notifications-outline', label: 'Notificaciones' },
     { icon: 'help-circle-outline', label: 'Ayuda' },
   ];
+  if (canManage(profile.roles)) {
+    items.unshift({ icon: 'storefront-outline', label: 'Panel del restaurante', detail: 'Menú y pedidos', href: '/panel' });
+  }
   // On the web the theme is chosen here (and in the top bar); the phone app follows the device.
   if (Platform.OS === 'web') {
     items.push({

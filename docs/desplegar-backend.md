@@ -97,7 +97,12 @@ Luego *Deployments* → *Redeploy*. La app del teléfono usa las mismas variable
 
 ### 10. Dar roles
 
-Cuando el dueño de un restaurante haya entrado una vez a la app:
+Cada persona entra una vez a la app o a la web y luego se le da su rol. Para administrar todo
+(ver y editar cualquier restaurante desde *Perfil → Panel del restaurante*), dale `admin` a tu cuenta:
+`docker compose run --rm migrate node dist/db/rol.js --correo tu@correo.com --rol admin`
+
+Un dueño con `restaurante` registra su local y su menú desde ese mismo panel. Con `--restaurante`
+se le asigna uno que ya exista:
 
 ```bash
 cd /opt/sionmarket
