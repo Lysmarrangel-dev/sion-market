@@ -6,3 +6,4 @@ dist/
 coverage/
 dist-test/
 dump.rdb
+.vercel/

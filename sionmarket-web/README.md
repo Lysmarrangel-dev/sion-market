@@ -65,3 +65,11 @@ Supabase → Table Editor → `solicitudes_comercio`, o desde n8n/back office co
 - RF-C01: registro con teléfono + OTP por SMS/WhatsApp (Supabase Phone Auth con un proveedor como Twilio o MessageBird).
 - RF-C02: tabla `direcciones` con validación contra polígonos de cobertura (PostGIS).
 - Separar `roles` de comercio y repartidor con sus propias tablas de alta y verificación de documentos (Supabase Storage con políticas por usuario).
+
+## La app en /app
+
+El mismo proyecto de Vercel publica también la app cliente (Expo web) en `/app`: `build.sh` copia este
+sitio a `dist/` y exporta `apps/cliente` dentro de `dist/app`. Sin variables `EXPO_PUBLIC_*` la app corre en
+modo demo; cuando el backend esté publicado, agrega en Vercel (Settings → Environment Variables)
+`EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_REALTIME_URL`, `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+Como sitio y app comparten dominio, la sesión de Supabase iniciada en la web sirve también en la app.
