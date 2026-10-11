@@ -39,6 +39,7 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sionmarket/contracts build
       - name: Generar el proyecto Android
         working-directory: apps/cliente
         run: npx expo prebuild --platform android --no-install --clean
