@@ -48,7 +48,7 @@ export class CacheService {
 @Global()
 @Module({
   providers: [
-    { provide: REDIS, useFactory: () => new Redis(config().REDIS_URL, { maxRetriesPerRequest: 3 }) },
+    { provide: REDIS, useFactory: () => new Redis(config().REDIS_URL, { maxRetriesPerRequest: 3, family: 0 }) },
     RealtimePublisher,
     CacheService,
   ],

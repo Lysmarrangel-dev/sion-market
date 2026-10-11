@@ -7,7 +7,7 @@ import { createRealtimeServer } from './realtime/server.js';
 
 const cfg = config();
 const { db, sql } = createDb(cfg.DATABASE_URL, 5);
-const redis = new Redis(cfg.REDIS_URL);
+const redis = new Redis(cfg.REDIS_URL, { family: 0 });
 const http = createServer((req, res) => {
   // Healthcheck for Docker and Nginx; everything else is Socket.IO on /ws.
   if (req.url === '/salud') return res.writeHead(200, { 'content-type': 'application/json' }).end('{"ok":true}');

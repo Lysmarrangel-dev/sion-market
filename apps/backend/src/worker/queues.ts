@@ -9,7 +9,8 @@ export type NotifyStatusJob = { orderId: string; status: string; reason: string 
 export type NotifyAssignedJob = { orderId: string; code: string; riderId: string };
 export type ExpireAcceptanceJob = { orderId: string };
 
-export const connection = () => ({ url: config().REDIS_URL, maxRetriesPerRequest: null });
+// family 0: resolve IPv4 and IPv6, needed on private networks such as Railway's (IPv6 only).
+export const connection = () => ({ url: config().REDIS_URL, maxRetriesPerRequest: null, family: 0 });
 
 export const QUEUES = Symbol('QUEUES');
 export const InjectQueues = () => Inject(QUEUES);
