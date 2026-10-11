@@ -1,15 +1,23 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef } from 'react';
-import { StyleSheet, View, type ViewStyle } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 import MapView, { Marker, Polygon, Polyline } from 'react-native-maps';
 
 import { Colors } from '@/constants/theme';
 import { COVERAGE_ZONE, type LatLng } from '@/data/catalog';
 
+import { OsmPinPicker, OsmTrackingMap } from './maps-osm';
+
+// Google Maps on Android needs an API key in the build (Expo Go brings its own). Builds made
+// without GOOGLE_MAPS_ANDROID_KEY use OpenStreetMap instead of crashing on the first map.
+const googleOnAndroid = Constants.executionEnvironment === ExecutionEnvironment.StoreClient || Boolean(Constants.expoConfig?.extra?.googleMapsAndroid);
+const useOsm = Platform.OS === 'android' && !googleOnAndroid;
+
 const delta = { latitudeDelta: 0.012, longitudeDelta: 0.012 };
 
 // Draggable pin for choosing a delivery address (RF-C02).
-export function PinPicker({ value, onChange, style }: { value: LatLng; onChange: (p: LatLng) => void; style?: ViewStyle }) {
+function GooglePinPicker({ value, onChange, style }: { value: LatLng; onChange: (p: LatLng) => void; style?: ViewStyle }) {
   const map = useRef<MapView>(null);
   useEffect(() => {
     map.current?.animateToRegion({ ...value, ...delta }, 300);
@@ -32,7 +40,7 @@ export function PinPicker({ value, onChange, style }: { value: LatLng; onChange:
 }
 
 // Live rider position from pickup to delivery (RF-C06).
-export function TrackingMap({ restaurant, customer, rider, style }: { restaurant: LatLng; customer: LatLng; rider: LatLng | null; style?: ViewStyle }) {
+function GoogleTrackingMap({ restaurant, customer, rider, style }: { restaurant: LatLng; customer: LatLng; rider: LatLng | null; style?: ViewStyle }) {
   const map = useRef<MapView>(null);
   return (
     <MapView
@@ -68,6 +76,9 @@ export function TrackingMap({ restaurant, customer, rider, style }: { restaurant
     </MapView>
   );
 }
+
+export const PinPicker = useOsm ? OsmPinPicker : GooglePinPicker;
+export const TrackingMap = useOsm ? OsmTrackingMap : GoogleTrackingMap;
 
 const styles = StyleSheet.create({
   pin: {
