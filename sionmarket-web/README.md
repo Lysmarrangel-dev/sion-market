@@ -11,7 +11,7 @@ Landing, registro, inicio de sesión, recuperación de cuenta y página de "muy 
 | `login.html` | Inicia sesión. Si el correo no está confirmado, ofrece reenviar el enlace. |
 | `recuperar.html` | Pide el enlace de recuperación. No revela si el correo existe. |
 | `restablecer.html` | Destino del enlace del correo: crea la contraseña nueva. Detecta enlaces vencidos. |
-| `pronto.html` | Página protegida de "muy pronto". Saluda por nombre, guarda intereses y consentimiento. Si la cuenta aún no confirma el correo, muestra el estado "confirma tu correo" con reenvío. |
+| `pronto.html` | Destino de los enlaces de confirmación. Si falta el teléfono o aceptar los términos (cuentas de Google), los pide; si la cuenta está completa, pasa directo a la cuenta en `/app`. También muestra el estado "confirma tu correo" con reenvío. |
 | `legal.html` | Borrador de términos y privacidad (revisar con un abogado). |
 
 ## Puesta en marcha
@@ -72,4 +72,12 @@ El mismo proyecto de Vercel publica también la app cliente (Expo web) en `/app`
 sitio a `dist/` y exporta `apps/cliente` dentro de `dist/app`. Sin variables `EXPO_PUBLIC_*` la app corre en
 modo demo; cuando el backend esté publicado, agrega en Vercel (Settings → Environment Variables)
 `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_REALTIME_URL`, `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
-Como sitio y app comparten dominio, la sesión de Supabase iniciada en la web sirve también en la app.
+Como sitio y app comparten dominio y la misma clave de sesión (`sionmarket-auth`), la sesión iniciada en la web
+sirve también en la app. "Ir a mi cuenta" lleva a `/app`: cualquiera puede ver los restaurantes reales, y al
+intentar pedir, ver pedidos o el perfil, la app manda a `login.html?siguiente=app/...` y vuelve a esa pantalla.
+
+Desde un celular, "Pedir ahora" intenta abrir la app del teléfono (`sionmarket://`). Cuando la publiques, pon los
+enlaces de las tiendas en `js/config.js` (`PLAY_STORE_URL`, `APP_STORE_URL`); mientras estén vacíos, sigue en la web.
+
+El tema claro u oscuro se elige con el botón de sol/luna (por defecto sigue al sistema) y se guarda en
+`localStorage` con la clave `sm-tema`, que también lee la app en `/app`.

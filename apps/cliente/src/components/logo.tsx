@@ -1,5 +1,7 @@
 import { Image } from 'expo-image';
 
+import { theme } from '@/constants/theme';
+
 const sources = {
   principal: require('@/assets/brand/sionmarket-logo-principal.png'),
   negativo: require('@/assets/brand/sionmarket-logo-negativo.png'),
@@ -10,7 +12,9 @@ const sources = {
 
 const ratios = { principal: 1200 / 526, negativo: 1200 / 526, blanco: 1200 / 526, isotipo: 420 / 710, isotipoBlanco: 420 / 710 };
 
-export function Logo({ kind = 'principal', height = 40 }: { kind?: keyof typeof sources; height?: number }) {
+export function Logo({ kind: asked = 'principal', height = 40 }: { kind?: keyof typeof sources; height?: number }) {
+  // On a dark surface the full-colour logo becomes the negative version, as on the website.
+  const kind = asked === 'principal' && theme === 'dark' ? 'negativo' : asked;
   return (
     <Image source={sources[kind]} style={{ height, width: height * ratios[kind] }} contentFit="contain" />
   );

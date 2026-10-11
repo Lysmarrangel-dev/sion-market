@@ -8,11 +8,12 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Text } from '@/components/text';
 import { Colors, Radius } from '@/constants/theme';
 import { useProfile } from '@/store/profile';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 const REWARD_USD = 2;
 
 // RF-C09: referral program with credit for both people.
-export default function Referidos() {
+function Referidos() {
   const { profile } = useProfile();
   const share = () =>
     Share.share({
@@ -53,3 +54,8 @@ const styles = StyleSheet.create({
   code: { alignItems: 'center', gap: 4, padding: 18, borderRadius: Radius.md, borderWidth: 2, borderStyle: 'dashed', borderColor: Colors.orange, backgroundColor: Colors.surface },
   row: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: Radius.md, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.line },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function ReferidosScreen() {
+  return useRequireLogin() ? <Referidos /> : null;
+}

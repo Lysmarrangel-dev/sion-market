@@ -67,6 +67,23 @@
     --aviso-fondo: #2A1606;
   }
 }
+:root[data-theme="dark"] {
+    --fondo: #000000;
+    --fondo-suave: #141414;
+    --superficie: #1A1A1A;
+    --texto: #FFFFFF;
+    --texto-2: #CFCCC6;
+    --texto-3: #A29E97;
+    --borde: #2C2C2C;
+    --borde-fuerte: #4A4A4A;
+    --enlace: var(--naranja);    /* naranja sobre negro: 6,9:1 */
+    --exito: #6FD39A;
+    --exito-fondo: #0E2A1A;
+    --error: #FF8A8A;
+    --error-fondo: #2E0F14;
+    --aviso-fondo: #2A1606;
+  }
+
 
 *, *::before, *::after { box-sizing: inherit; }
 
@@ -191,6 +208,9 @@ p { margin: 0; }
   :root:not([data-theme="light"]) .logo-claro { display: none; }
   :root:not([data-theme="light"]) .logo-oscuro { display: block; }
 }
+:root[data-theme="dark"] .logo-claro { display: none; }
+  :root[data-theme="dark"] .logo-oscuro { display: block; }
+
 
 /* ---------- Hero con corte diagonal de 16° ---------- */
 .hero { position: relative; overflow: hidden; }
@@ -279,6 +299,8 @@ p { margin: 0; }
 .estado-activo { background: var(--negro); color: var(--blanco); }
 .estado-pronto { background: transparent; color: var(--texto); border: 1px solid var(--borde-fuerte); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .estado-activo { background: var(--naranja); color: var(--negro); } }
+:root[data-theme="dark"] .estado-activo { background: var(--naranja); color: var(--negro); }
+
 @media (max-width: 760px) {
   .servicio { grid-template-columns: 40px 1fr; gap: 6px 16px; }
   .servicio .punto { width: 28px; height: 28px; margin-top: 4px; }
@@ -333,6 +355,8 @@ p { margin: 0; }
 .chip { border: 1px solid var(--borde-fuerte); border-radius: 999px; padding: 6px 14px; font-size: .875rem; font-weight: 500; background: transparent; }
 .chip-principal { background: var(--naranja); border-color: var(--naranja); color: var(--negro); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .burbuja-cliente { background: var(--blanco); color: var(--negro); } }
+:root[data-theme="dark"] .burbuja-cliente { background: var(--blanco); color: var(--negro); }
+
 @media (max-width: 860px) { .ia { grid-template-columns: 1fr; gap: 40px; } }
 
 /* Seguridad */
@@ -510,6 +534,8 @@ html.pagina-acceso, html.pagina-acceso body { height: 100%; }
 .pronto-cabecera .usuario { display: flex; align-items: center; gap: 10px; }
 .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--negro); color: var(--blanco); display: grid; place-items: center; font-weight: 700; font-size: .9375rem; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .avatar { background: var(--naranja); color: var(--negro); } }
+:root[data-theme="dark"] .avatar { background: var(--naranja); color: var(--negro); }
+
 .pronto-cuerpo { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(32px, 6vw, 80px); align-items: center; padding: 24px clamp(20px, 5vw, 56px) 48px; max-width: 1280px; width: 100%; margin: 0 auto; }
 .pronto-cuerpo .display { max-width: 13ch; }
 .pronto-cuerpo .lead { margin-top: 20px; }
@@ -572,3 +598,24 @@ html.pagina-acceso, html.pagina-acceso body { height: 100%; }
   .cabecera nav .enlace-nav { padding: 8px 6px; font-size: .9375rem; }
   .cabecera .btn { padding: 0 14px; font-size: .9375rem; min-height: 42px; }
 }
+
+/* ---------- Selector de tema (claro / oscuro) ---------- */
+.btn-tema {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 999px;
+  border: 1px solid var(--borde); background: var(--superficie); color: var(--texto);
+  cursor: pointer; flex: none;
+}
+.btn-tema:hover { background: var(--fondo-suave); }
+.btn-tema svg { width: 20px; height: 20px; }
+.btn-tema .icono-sol { display: none; }
+:root[data-theme="dark"] .btn-tema .icono-sol { display: block; }
+:root[data-theme="dark"] .btn-tema .icono-luna { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .btn-tema .icono-sol { display: block; }
+  :root:not([data-theme="light"]) .btn-tema .icono-luna { display: none; }
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+.btn-tema-flotante { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 16px); right: 16px; z-index: 20; }
+.cabecera nav .btn-tema { margin-left: 4px; }

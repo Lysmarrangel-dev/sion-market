@@ -32,9 +32,9 @@ export function Button({ title, variant = 'primary', right, style, disabled, ...
 const variants = {
   // Brand rule: text on orange is always black.
   primary: { container: { backgroundColor: Colors.orange }, color: Colors.black },
-  dark: { container: { backgroundColor: Colors.black }, color: Colors.white },
-  outline: { container: { borderWidth: 1.5, borderColor: Colors.black }, color: Colors.black },
-  ghost: { container: {}, color: Colors.black },
+  dark: { container: { backgroundColor: Colors.ink }, color: Colors.inkInverse },
+  outline: { container: { borderWidth: 1.5, borderColor: Colors.ink }, color: Colors.ink },
+  ghost: { container: {}, color: Colors.ink },
 };
 
 const styles = StyleSheet.create({

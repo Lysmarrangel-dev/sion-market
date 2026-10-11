@@ -11,9 +11,10 @@ import type { Category, ModifierGroup, Product, Restaurant } from './mock';
 export * from './mock';
 
 export let TASA_BCV = mock.TASA_BCV;
-export const CATEGORIES: Category[] = [...mock.CATEGORIES];
-export const RESTAURANTS: Restaurant[] = [...mock.RESTAURANTS];
-export const PRODUCTS: Product[] = [...mock.PRODUCTS];
+// Online the catalog only ever shows what is in the database; the mock is for demo mode.
+export const CATEGORIES: Category[] = online ? [] : [...mock.CATEGORIES];
+export const RESTAURANTS: Restaurant[] = online ? [] : [...mock.RESTAURANTS];
+export const PRODUCTS: Product[] = online ? [] : [...mock.PRODUCTS];
 
 export const getRestaurant = (id: string) => RESTAURANTS.find((r) => r.id === id);
 export const getProduct = (id: string) => PRODUCTS.find((p) => p.id === id);
@@ -74,7 +75,7 @@ function toProducts(detail: RestaurantDetail): Product[] {
 
 const replace = <T>(target: T[], items: T[]) => target.splice(0, target.length, ...items);
 
-/** Loads categories, restaurants, menus and the BCV rate. Keeps the mock if the API is down. */
+/** Loads categories, restaurants, menus and the BCV rate. If the API is down the lists stay empty. */
 export async function loadCatalog() {
   if (!online) return;
   try {
@@ -89,6 +90,6 @@ export async function loadCatalog() {
     replace(PRODUCTS, details.flatMap(toProducts));
     TASA_BCV = rate.rate;
   } catch (err) {
-    console.warn('No se pudo cargar el catálogo del API, se usan los datos demo', err);
+    console.warn('No se pudo cargar el catálogo del API', err);
   }
 }

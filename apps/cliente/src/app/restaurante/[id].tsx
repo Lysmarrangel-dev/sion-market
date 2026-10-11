@@ -41,8 +41,8 @@ export default function RestauranteScreen() {
           <Info icon="location-outline" text={`${restaurant.address} · ${restaurant.distanceKm} km`} />
           {restaurant.promo ? (
             <View style={styles.promo}>
-              <Ionicons name="pricetag" size={16} color={Colors.crimson} />
-              <Text variant="bodyStrong" style={{ color: Colors.crimson }}>
+              <Ionicons name="pricetag" size={16} color={Colors.danger} />
+              <Text variant="bodyStrong" style={{ color: Colors.danger }}>
                 {restaurant.promo}
               </Text>
             </View>
@@ -72,7 +72,7 @@ export default function RestauranteScreen() {
                     style={({ pressed }) => [styles.product, wide && { width: '49.2%' }, pressed && { opacity: 0.85 }, p.soldOut && { opacity: 0.5 }]}>
                       <View style={{ flex: 1, gap: 4 }}>
                         {p.soldOut ? (
-                          <Text variant="label" style={{ color: Colors.crimson, fontSize: 11 }}>
+                          <Text variant="label" style={{ color: Colors.danger, fontSize: 11 }}>
                             Agotado hoy
                           </Text>
                         ) : p.popular ? (
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 10,
     borderRadius: Radius.sm,
-    backgroundColor: '#FDECEE',
+    backgroundColor: Colors.dangerSoft,
   },
   product: {
     flexDirection: 'row',

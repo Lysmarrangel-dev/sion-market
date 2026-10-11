@@ -9,10 +9,12 @@ import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { ApiRequestError, auth, online } from '@/lib/api';
 import { goBack } from '@/lib/nav';
+import { useWebsiteLogin } from '@/lib/auth-gate';
 
 const LENGTH = 6;
 
 export default function Otp() {
+  useWebsiteLogin();
   const { phone = '' } = useLocalSearchParams<{ phone: string }>();
   const [code, setCode] = useState('');
   const [seconds, setSeconds] = useState(30);
@@ -107,7 +109,7 @@ export default function Otp() {
 
         <View style={{ flex: 1 }} />
         {error ? (
-          <Text variant="caption" style={{ textAlign: 'center', marginBottom: 12, color: Colors.crimson }}>
+          <Text variant="caption" style={{ textAlign: 'center', marginBottom: 12, color: Colors.danger }}>
             {error}
           </Text>
         ) : !online ? (
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cellActive: { borderColor: Colors.orange, backgroundColor: Colors.surface },
-  cellFilled: { borderColor: Colors.black, backgroundColor: Colors.surface },
+  cellFilled: { borderColor: Colors.ink, backgroundColor: Colors.surface },
   digit: { fontFamily: Fonts.display, fontSize: 24 },
   hidden: { position: 'absolute', opacity: 0, height: 1, width: 1 },
 });

@@ -16,6 +16,9 @@ import { CATEGORIES, getRestaurant, RESTAURANTS } from '@/data/catalog';
 import { isActive, STATUS_INFO } from '@/data/order-states';
 import { CONTENT_MAX, useLayout } from '@/lib/layout';
 import { useCart } from '@/store/cart';
+import { online } from '@/lib/api';
+import { requireLogin } from '@/lib/auth-gate';
+import { useSession } from '@/lib/session';
 import { useAddresses } from '@/store/addresses';
 import { useOrders } from '@/store/orders';
 
@@ -25,6 +28,7 @@ export default function Home() {
   const { orders } = useOrders();
   const { wide, columns } = useLayout();
   const { count } = useCart();
+  const session = useSession();
   const active = orders.find((o) => isActive(o.status));
   // RF-C03: previous orders on the home screen, one per restaurant.
   const previous = [...new Map(orders.filter((o) => o.status === 'ENTREGADO').map((o) => [o.restaurantId, o])).values()];
@@ -39,18 +43,18 @@ export default function Home() {
             style={{ flex: 1 }}
             accessibilityRole="button"
             accessibilityLabel="Cambiar dirección de entrega"
-            onPress={() => router.push({ pathname: '/direcciones', params: { elegir: '1' } })}>
+            onPress={() => requireLogin() && router.push({ pathname: '/direcciones', params: { elegir: '1' } })}>
             <Text variant="label" style={{ color: Colors.textMuted }}>
               Entregar en
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text variant="heading" numberOfLines={1}>
-                {selected ? `${selected.alias} · ${selected.street}` : 'Agrega una dirección'}
+                {selected ? `${selected.alias} · ${selected.street}` : session || !online ? 'Agrega una dirección' : 'Entra para pedir a domicilio'}
               </Text>
-              <Ionicons name="chevron-down" size={16} color={Colors.black} />
+              <Ionicons name="chevron-down" size={16} color={Colors.ink} />
             </View>
           </Pressable>
-          <IconButton name="notifications-outline" badge={active ? 1 : undefined} onPress={() => active && router.push({ pathname: '/pedido/[id]', params: { id: active.id } })} />
+          <IconButton name="notifications-outline" badge={active ? 1 : undefined} onPress={() => requireLogin() && active && router.push({ pathname: '/pedido/[id]', params: { id: active.id } })} />
         </View>
 
         <Pressable style={styles.search} onPress={() => router.navigate('/buscar')}>
@@ -69,7 +73,9 @@ export default function Home() {
             Tu primer delivery es gratis
           </Text>
           <View style={styles.code}>
-            <Text variant="bodyStrong">Código: SIONNUEVO</Text>
+            <Text variant="bodyStrong" style={{ color: Colors.black }}>
+              Código: SIONNUEVO
+            </Text>
           </View>
         </LinearGradient>
 
@@ -152,7 +158,13 @@ export default function Home() {
           Todos los restaurantes
         </Text>
         <View style={{ paddingHorizontal: 16 }}>
-          <RestaurantGrid restaurants={RESTAURANTS} />
+          {RESTAURANTS.length ? (
+            <RestaurantGrid restaurants={RESTAURANTS} />
+          ) : (
+            <Text variant="caption" style={{ textAlign: 'center', padding: 32 }}>
+              Pronto verás aquí los comercios de San Felipe.
+            </Text>
+          )}
         </View>
       </ScrollView>
 
@@ -160,7 +172,7 @@ export default function Home() {
         style={[styles.ai, wide && { right: 24, bottom: count ? 90 : 24 }]}
         onPress={() => router.push('/asistente')}
         accessibilityLabel="Abrir Sion IA">
-        <Ionicons name="sparkles" size={22} color={Colors.white} />
+        <Ionicons name="sparkles" size={22} color={Colors.inkInverse} />
       </Pressable>
       <CartBar />
     </SafeAreaView>
@@ -233,7 +245,7 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 6,

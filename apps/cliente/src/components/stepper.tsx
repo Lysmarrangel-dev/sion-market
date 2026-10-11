@@ -8,7 +8,7 @@ export function Stepper({ value, onChange, min = 0 }: { value: number; onChange:
   return (
     <View style={styles.row}>
       <Pressable style={styles.btn} hitSlop={6} onPress={() => onChange(Math.max(min, value - 1))}>
-        <Ionicons name={value <= 1 && min === 0 ? 'trash-outline' : 'remove'} size={18} color={Colors.black} />
+        <Ionicons name={value <= 1 && min === 0 ? 'trash-outline' : 'remove'} size={18} color={Colors.ink} />
       </Pressable>
       <Text variant="heading" style={styles.value}>
         {value}

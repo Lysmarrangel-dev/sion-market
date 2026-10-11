@@ -7,6 +7,7 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Text } from '@/components/text';
 import { Colors } from '@/constants/theme';
 import { RESTAURANTS } from '@/data/catalog';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 // Canned answers for the demo; the real assistant will call the AI backend.
 function answer(text: string) {
@@ -23,7 +24,7 @@ function answer(text: string) {
   return 'Puedo recomendarte restaurantes, buscar platos o ayudarte con tu pedido. Prueba con “algo rápido” o “pizza”.';
 }
 
-export default function Asistente() {
+function Asistente() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }} edges={['top', 'bottom']}>
       <ScreenHeader title="Sion IA" />
@@ -44,4 +45,9 @@ export default function Asistente() {
       />
     </SafeAreaView>
   );
+}
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function AsistenteScreen() {
+  return useRequireLogin() ? <Asistente /> : null;
 }

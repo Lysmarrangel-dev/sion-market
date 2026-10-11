@@ -12,9 +12,10 @@ import { Colors, Fonts, Radius } from '@/constants/theme';
 import { getRestaurant, RIDER } from '@/data/catalog';
 import { useOrders } from '@/store/orders';
 import { goBack } from '@/lib/nav';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 // RF-C08: separate ratings for the food (restaurant) and the delivery (rider).
-export default function Calificar() {
+function Calificar() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { get, rate } = useOrders();
   const order = get(id);
@@ -87,3 +88,8 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function CalificarScreen() {
+  return useRequireLogin() ? <Calificar /> : null;
+}

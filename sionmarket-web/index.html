@@ -17,6 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Montserrat+Alternates:wght@600&display=swap">
   <link rel="stylesheet" href="css/styles.css">
+  <script src="js/tema.js"></script>
   <script type="module" src="js/landing.js"></script>
 </head>
 <body>
@@ -31,10 +32,10 @@
       <nav aria-label="Principal">
         <a class="enlace-nav solo-ancho" href="#servicios">Servicios</a>
         <a class="enlace-nav solo-ancho" href="#comercios">Para comercios</a>
-        <a class="enlace-nav" href="/app">Abrir la app</a>
         <a class="enlace-nav" href="login.html" data-sin-sesion>Iniciar sesión</a>
         <a class="btn btn-primario" href="registro.html" data-sin-sesion>Crear cuenta</a>
-        <a class="btn btn-primario" href="pronto.html" data-con-sesion hidden>Ir a mi cuenta</a>
+        <a class="btn btn-primario" href="/app" data-con-sesion hidden>Ir a mi cuenta</a>
+        <button class="btn-tema" type="button" data-tema aria-label="Cambiar tema"></button>
       </nav>
     </div>
   </header>
@@ -49,7 +50,7 @@
           <h1 class="display" id="titulo-hero">Lo que necesitas, a un toque.</h1>
           <p class="lead">Compra en los comercios de San Felipe, recibe tu pedido en casa y sigue al repartidor en el mapa. Todo con una sola cuenta y un mismo método de pago.</p>
           <div class="hero-acciones">
-            <a class="btn btn-primario" href="/app">Pedir ahora</a>
+            <a class="btn btn-primario" href="/app" data-pedir>Pedir ahora</a>
             <a class="btn btn-secundario" href="registro.html">Crear mi cuenta</a>
           </div>
           <p class="hero-nota apoyo">

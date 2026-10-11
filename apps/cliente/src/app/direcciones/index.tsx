@@ -9,12 +9,13 @@ import { Text } from '@/components/text';
 import { Colors, Radius } from '@/constants/theme';
 import { inCoverage, useAddresses } from '@/store/addresses';
 import { goBack } from '@/lib/nav';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 const aliasIcon = (alias: string) =>
   alias.toLowerCase().includes('casa') ? 'home' : alias.toLowerCase().includes('oficina') ? 'briefcase' : 'location';
 
 // RF-C02: saved addresses with alias. Opened with ?elegir=1 from checkout to pick one.
-export default function Direcciones() {
+function Direcciones() {
   const { elegir } = useLocalSearchParams<{ elegir?: string }>();
   const { addresses, selected, select, remove } = useAddresses();
 
@@ -36,7 +37,7 @@ export default function Direcciones() {
                 if (elegir) goBack();
               }}
               style={[styles.card, on && styles.cardOn, !covered && { opacity: 0.6 }]}>
-              <Ionicons name={aliasIcon(a.alias)} size={22} color={on ? Colors.black : Colors.orangeDeep} />
+              <Ionicons name={aliasIcon(a.alias)} size={22} color={on ? Colors.ink : Colors.orangeDeep} />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text variant="bodyStrong">{a.alias}</Text>
                 <Text variant="caption">{a.street}</Text>
@@ -44,7 +45,7 @@ export default function Direcciones() {
                   Ref.: {a.reference}
                 </Text>
                 {!covered ? (
-                  <Text variant="caption" style={{ color: Colors.crimson }}>
+                  <Text variant="caption" style={{ color: Colors.danger }}>
                     Fuera de la zona de cobertura
                   </Text>
                 ) : null}
@@ -60,7 +61,7 @@ export default function Direcciones() {
                 <Ionicons
                   name="trash-outline"
                   size={20}
-                  color={Colors.crimson}
+                  color={Colors.danger}
                   accessibilityLabel={`Borrar ${a.alias}`}
                   onPress={() =>
                     Alert.alert('Borrar dirección', `¿Borrar «${a.alias}»?`, [
@@ -91,3 +92,8 @@ const styles = StyleSheet.create({
   },
   cardOn: { borderColor: Colors.orange, backgroundColor: Colors.orangeSoft },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function DireccionesScreen() {
+  return useRequireLogin() ? <Direcciones /> : null;
+}

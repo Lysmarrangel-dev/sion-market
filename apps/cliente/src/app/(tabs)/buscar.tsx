@@ -74,10 +74,10 @@ export default function Buscar() {
             {query ? <Ionicons name="close-circle" size={20} color={Colors.textMuted} onPress={() => setQuery('')} /> : null}
           </View>
           <Pressable
-            style={[styles.filterBtn, active > 0 && { backgroundColor: Colors.black }]}
+            style={[styles.filterBtn, active > 0 && { backgroundColor: Colors.ink }]}
             onPress={() => setSheet(true)}
             accessibilityLabel={`Filtros${active ? `, ${active} activos` : ''}`}>
-            <Ionicons name="options" size={22} color={active ? Colors.white : Colors.black} />
+            <Ionicons name="options" size={22} color={active ? Colors.inkInverse : Colors.ink} />
             {active ? (
               <View style={styles.filterBadge}>
                 <Text style={{ fontSize: 11, color: Colors.black, fontWeight: '700' }}>{active}</Text>
@@ -182,7 +182,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: on }} style={[styles.chip, on && styles.chipActive]}>
-      <Text variant="bodyStrong" style={{ fontSize: 14, color: on ? Colors.white : Colors.text }}>
+      <Text variant="bodyStrong" style={{ fontSize: 14, color: on ? Colors.inkInverse : Colors.text }}>
         {label}
       </Text>
     </Pressable>
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.line,
   },
-  chipActive: { backgroundColor: Colors.black, borderColor: Colors.black },
+  chipActive: { backgroundColor: Colors.ink, borderColor: Colors.ink },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheet: {
     maxHeight: '80%',

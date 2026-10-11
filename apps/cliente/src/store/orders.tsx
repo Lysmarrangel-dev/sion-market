@@ -179,7 +179,7 @@ function fromApi(o: ApiOrder, local?: Order): Order {
 }
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
-  const [orders, setOrders, hydrated] = usePersistentState<Order[]>('orders', online ? [] : seedOrders());
+  const [orders, setOrders, hydrated] = usePersistentState<Order[]>(online ? 'pedidos' : 'orders', online ? [] : seedOrders());
 
   const upsert = (order: ApiOrder) =>
     setOrders((prev) => {

@@ -16,11 +16,12 @@ import { confirm } from '@/lib/confirm';
 import { lerp } from '@/lib/geo';
 import { riderProgress, useOrders } from '@/store/orders';
 import { goBack } from '@/lib/nav';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 const time = (ms: number) => new Date(ms).toLocaleTimeString('es-VE', { hour: 'numeric', minute: '2-digit' });
 
 // RF-C06: tracking with timeline, dynamic ETA and live rider map from ENTREGADO_AL_DELIVERY.
-export default function PedidoScreen() {
+function PedidoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { get, cancel } = useOrders();
   const order = get(id);
@@ -67,7 +68,7 @@ export default function PedidoScreen() {
           </View>
         )}
         <Pressable style={styles.close} onPress={goBack} accessibilityLabel="Cerrar">
-          <Ionicons name="close" size={22} color={Colors.black} />
+          <Ionicons name="close" size={22} color={Colors.ink} />
         </Pressable>
       </View>
 
@@ -173,12 +174,12 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sheet: { flex: 1, marginTop: -20, backgroundColor: Colors.surface, borderTopLeftRadius: Radius.lg, borderTopRightRadius: Radius.lg },
-  ended: { padding: 14, borderRadius: Radius.md, backgroundColor: '#FDECEE', gap: 4 },
+  ended: { padding: 14, borderRadius: Radius.md, backgroundColor: Colors.dangerSoft, gap: 4 },
   progress: { flexDirection: 'row', gap: 4 },
   bar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: Colors.line },
   barOn: { backgroundColor: Colors.orange },
@@ -189,3 +190,8 @@ const styles = StyleSheet.create({
   avatar: { width: 48, height: 48, borderRadius: 24 },
   round: { width: 42, height: 42, borderRadius: 21, backgroundColor: Colors.orange, alignItems: 'center', justifyContent: 'center' },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function PedidoScreenScreen() {
+  return useRequireLogin() ? <PedidoScreen /> : null;
+}

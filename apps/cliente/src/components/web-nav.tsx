@@ -6,8 +6,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Logo } from '@/components/logo';
 import { formatUsd } from '@/components/price';
 import { Text } from '@/components/text';
-import { Colors, Fonts, Radius } from '@/constants/theme';
+import { Colors, Fonts, Radius, setTheme, theme } from '@/constants/theme';
 import { online } from '@/lib/api';
+import { requireLogin } from '@/lib/auth-gate';
 import { CONTENT_MAX, useLayout } from '@/lib/layout';
 import { useSession } from '@/lib/session';
 import { useCart } from '@/store/cart';
@@ -62,6 +63,12 @@ export function WebNav({ state, descriptors, navigation }: BottomTabBarProps) {
         </View>
 
         <View style={styles.actions}>
+          <Pressable
+            style={styles.round}
+            onPress={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            accessibilityLabel={theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}>
+            <Ionicons name={theme === 'dark' ? 'sunny-outline' : 'moon-outline'} size={20} color={Colors.text} />
+          </Pressable>
           <Pressable style={styles.cart} onPress={() => router.push('/carrito')} accessibilityLabel={`Carrito, ${count} productos`}>
             <Ionicons name="bag-handle-outline" size={20} color={Colors.text} />
             {desktop && count ? <Text variant="bodyStrong">{formatUsd(subtotalUsd)}</Text> : null}
@@ -72,7 +79,7 @@ export function WebNav({ state, descriptors, navigation }: BottomTabBarProps) {
             ) : null}
           </Pressable>
           {online && !session ? (
-            <Pressable style={styles.enter} onPress={() => router.push('/login')} accessibilityRole="button">
+            <Pressable style={styles.enter} onPress={requireLogin} accessibilityRole="button">
               <Text variant="bodyStrong" style={{ color: Colors.black }}>
                 Entrar
               </Text>
@@ -101,6 +108,15 @@ const styles = StyleSheet.create({
   linkOn: { backgroundColor: Colors.orangeSoft },
   linkText: { fontFamily: Fonts.headingMedium, fontSize: 14 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  round: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1,
+    borderColor: Colors.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cart: {
     flexDirection: 'row',
     alignItems: 'center',

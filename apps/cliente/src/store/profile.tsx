@@ -1,17 +1,44 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 
+import { api, getSession, onSessionChange, online } from '@/lib/api';
 import { usePersistentState } from '@/lib/persist';
 
 export type Profile = { name: string; phone: string; email: string; photo: string | null; referralCode: string; creditUsd: number };
 
-const DEFAULT: Profile = { name: 'Albieri', phone: '', email: '', photo: null, referralCode: 'ALBIERI5', creditUsd: 0 };
+const DEMO: Profile = { name: 'Albieri', phone: '', email: '', photo: null, referralCode: 'ALBIERI5', creditUsd: 0 };
+const EMPTY: Profile = { name: '', phone: '', email: '', photo: null, referralCode: '', creditUsd: 0 };
+
+type Me = { name: string | null; phone: string | null; email: string | null; photoUrl: string | null };
 
 type Ctx = { profile: Profile; update: (patch: Partial<Profile>) => void };
 
 const ProfileContext = createContext<Ctx | null>(null);
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = usePersistentState<Profile>('profile', DEFAULT);
+  // Own key online so a profile saved by the old demo build never shows up for a real account.
+  const [profile, setProfile, hydrated] = usePersistentState<Profile>(online ? 'perfil' : 'profile', online ? EMPTY : DEMO);
+
+  // Online the profile is the signed-in account's: from our API, falling back to what Supabase knows.
+  useEffect(() => {
+    if (!online || !hydrated) return;
+    const sync = (s: ReturnType<typeof getSession>) => {
+      if (!s) return setProfile(EMPTY);
+      setProfile((p) => ({ ...p, name: p.name || s.user.name || '', email: s.user.email ?? p.email, phone: s.user.phone ?? p.phone }));
+      api<Me>('GET', '/yo')
+        .then((me) =>
+          setProfile((p) => ({
+            ...p,
+            name: me.name || s.user.name || p.name,
+            email: me.email ?? p.email,
+            phone: me.phone ?? p.phone,
+            photo: me.photoUrl ?? p.photo,
+          })),
+        )
+        .catch(() => {});
+    };
+    sync(getSession());
+    return onSessionChange(sync);
+  }, [hydrated, setProfile]);
   const value = useMemo<Ctx>(
     () => ({ profile, update: (patch) => setProfile((prev) => ({ ...prev, ...patch })) }),
     [profile, setProfile],

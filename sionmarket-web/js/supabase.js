@@ -28,10 +28,15 @@ export async function sesionActual() {
   return data.session ?? null;
 }
 
-/** Destino tras iniciar sesión: solo rutas internas para evitar redirecciones abiertas. */
-export function destinoSeguro(porDefecto = "pronto.html") {
+/** La cuenta del cliente vive en la app web. */
+export const APP = "/app";
+
+/** Destino tras iniciar sesión: solo rutas internas para evitar redirecciones abiertas.
+ *  `siguiente=app` o `siguiente=app/ruta` vuelve a esa pantalla de la app web. */
+export function destinoSeguro(porDefecto = APP) {
   const siguiente = new URLSearchParams(window.location.search).get("siguiente");
   if (siguiente && /^[a-z0-9-]+\.html$/i.test(siguiente)) return siguiente;
+  if (siguiente && /^app(\/[a-z0-9-]+)*$/i.test(siguiente)) return "/" + siguiente;
   return porDefecto;
 }
 

@@ -27,6 +27,8 @@ export const supabase = online
         storage: Platform.OS === 'web' ? undefined : AsyncStorage,
         autoRefreshToken: true,
         persistSession: true,
+        // Same key as the website, so signing in on www.sionmarket.app also signs in the web app.
+        storageKey: 'sionmarket-auth',
         // On web, Google sends the user back to /app with the session in the URL.
         detectSessionInUrl: Platform.OS === 'web',
       },
@@ -51,7 +53,7 @@ export class ApiRequestError extends Error {
   }
 }
 
-type Session = { accessToken: string; user: { id: string; phone?: string; email?: string } };
+type Session = { accessToken: string; user: { id: string; phone?: string; email?: string; name?: string } };
 let session: Session | null = null;
 const listeners = new Set<(s: Session | null) => void>();
 
@@ -66,7 +68,16 @@ export function onSessionChange(listener: (s: Session | null) => void) {
 
 function apply(next: SupabaseSession | null) {
   session = next
-    ? { accessToken: next.access_token, user: { id: next.user.id, phone: next.user.phone, email: next.user.email } }
+    ? {
+        accessToken: next.access_token,
+        user: {
+          id: next.user.id,
+          phone: next.user.phone,
+          email: next.user.email,
+          // Accounts made on the website carry `nombre`; Google ones carry `full_name`.
+          name: next.user.user_metadata?.nombre ?? (String(next.user.user_metadata?.full_name ?? '').split(' ')[0] || undefined),
+        },
+      }
     : null;
   listeners.forEach((l) => l(session));
 }

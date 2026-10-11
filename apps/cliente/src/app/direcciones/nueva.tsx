@@ -13,10 +13,11 @@ import { Colors, Fonts, Radius } from '@/constants/theme';
 import { CITY_CENTER } from '@/data/catalog';
 import { inCoverage, useAddresses } from '@/store/addresses';
 import { goBack } from '@/lib/nav';
+import { useRequireLogin } from '@/lib/auth-gate';
 
 const ALIASES = ['Casa', 'Oficina', 'Otro'];
 
-export default function NuevaDireccion() {
+function NuevaDireccion() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const insets = useSafeAreaInsets();
   const { addresses, save } = useAddresses();
@@ -45,7 +46,7 @@ export default function NuevaDireccion() {
         <View style={styles.mapTop}>
           <IconButton name="close" light onPress={goBack} />
           <Pressable style={styles.locate} onPress={useMyLocation}>
-            <Ionicons name="locate" size={18} color={Colors.black} />
+            <Ionicons name="locate" size={18} color={Colors.ink} />
             <Text variant="bodyStrong" style={{ fontSize: 14 }}>
               Mi ubicación
             </Text>
@@ -60,19 +61,19 @@ export default function NuevaDireccion() {
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: insets.bottom + 20 }} keyboardShouldPersistTaps="handled">
         {covered ? (
-          <View style={[styles.banner, { backgroundColor: '#E8F6EE' }]}>
+          <View style={[styles.banner, { backgroundColor: Colors.successSoft }]}>
             <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
             <Text style={{ color: Colors.success, flex: 1 }}>Llegamos a esta dirección</Text>
           </View>
         ) : (
-          <View style={[styles.banner, { backgroundColor: '#FDECEE', alignItems: 'flex-start' }]}>
-            <Ionicons name="alert-circle" size={20} color={Colors.crimson} />
+          <View style={[styles.banner, { backgroundColor: Colors.dangerSoft, alignItems: 'flex-start' }]}>
+            <Ionicons name="alert-circle" size={20} color={Colors.danger} />
             <View style={{ flex: 1, gap: 8 }}>
-              <Text style={{ color: Colors.crimson }}>
+              <Text style={{ color: Colors.danger }}>
                 Todavía no llegamos a esta zona. Por ahora cubrimos el área urbana de San Felipe.
               </Text>
               <Pressable onPress={() => setNotifyMe(true)} disabled={notifyMe}>
-                <Text variant="bodyStrong" style={{ color: Colors.crimson, textDecorationLine: notifyMe ? 'none' : 'underline' }}>
+                <Text variant="bodyStrong" style={{ color: Colors.danger, textDecorationLine: notifyMe ? 'none' : 'underline' }}>
                   {notifyMe ? '✓ Te avisaremos cuando lleguemos a tu zona' : 'Avísame cuando lleguen a mi zona'}
                 </Text>
               </Pressable>
@@ -85,7 +86,7 @@ export default function NuevaDireccion() {
             const on = alias === a || (a === 'Otro' && !ALIASES.slice(0, 2).includes(alias));
             return (
               <Pressable key={a} onPress={() => setAlias(a === 'Otro' ? '' : a)} style={[styles.chip, on && styles.chipOn]}>
-                <Text variant="bodyStrong" style={{ fontSize: 14, color: on ? Colors.white : Colors.text }}>
+                <Text variant="bodyStrong" style={{ fontSize: 14, color: on ? Colors.inkInverse : Colors.text }}>
                   {a}
                 </Text>
               </Pressable>
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
   },
   hint: {
     position: 'absolute',
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.line,
   },
-  chipOn: { backgroundColor: Colors.black, borderColor: Colors.black },
+  chipOn: { backgroundColor: Colors.ink, borderColor: Colors.ink },
   input: {
     minHeight: 50,
     borderRadius: Radius.md,
@@ -178,3 +179,8 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
 });
+
+// Only for signed-in customers; visitors are sent to sign in first.
+export default function NuevaDireccionScreen() {
+  return useRequireLogin() ? <NuevaDireccion /> : null;
+}

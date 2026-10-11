@@ -15,6 +15,7 @@ import { getProduct, getRestaurant, type ModifierGroup } from '@/data/catalog';
 import { confirm } from '@/lib/confirm';
 import { unitPrice, useCart, type SelectedOption } from '@/store/cart';
 import { goBack } from '@/lib/nav';
+import { requireLogin } from '@/lib/auth-gate';
 
 // Human-readable rule for a modifier group (RF-C04).
 function ruleText(g: ModifierGroup) {
@@ -52,6 +53,7 @@ export default function ProductoScreen() {
     });
 
   const add = async () => {
+    if (!requireLogin()) return;
     if (cart.restaurantId && cart.restaurantId !== product.restaurantId) {
       const other = getRestaurant(cart.restaurantId)?.name ?? 'otro restaurante';
       const ok = await confirm(
@@ -143,7 +145,7 @@ export default function ProductoScreen() {
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         {missing.length ? (
-          <Text variant="caption" style={{ textAlign: 'center', color: Colors.crimson }}>
+          <Text variant="caption" style={{ textAlign: 'center', color: Colors.danger }}>
             Falta elegir: {missing.map((g) => g.name.toLowerCase()).join(', ')}
           </Text>
         ) : null}
@@ -166,11 +168,11 @@ const styles = StyleSheet.create({
   block: { marginHorizontal: 20, paddingVertical: 16, borderTopWidth: 1, borderTopColor: Colors.line, gap: 10 },
   blockHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.pill, backgroundColor: Colors.crimson },
-  badgeDone: { backgroundColor: '#E8F6EE' },
+  badgeDone: { backgroundColor: Colors.successSoft },
   option: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
   check: { width: 24, height: 24, borderRadius: 7, borderWidth: 1.5, borderColor: Colors.line, alignItems: 'center', justifyContent: 'center' },
   radio: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.line, alignItems: 'center', justifyContent: 'center' },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.black },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.ink },
   on: { backgroundColor: Colors.orange, borderColor: Colors.orange },
   note: {
     minHeight: 70,

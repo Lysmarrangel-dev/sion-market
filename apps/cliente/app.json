@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/brand/sionmarket-icono-app.png",
     "scheme": "sionmarket",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/brand/sionmarket-icono-app.png",
       "supportsTablet": false,
