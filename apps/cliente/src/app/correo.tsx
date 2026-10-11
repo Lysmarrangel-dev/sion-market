@@ -8,6 +8,7 @@ import { IconButton } from '@/components/icon-button';
 import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { ApiRequestError, auth } from '@/lib/api';
+import { goBack } from '@/lib/nav';
 
 /** Email + password, the same account the customer may already have from the website. */
 export default function Correo() {
@@ -43,11 +44,11 @@ export default function Correo() {
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.surface }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
         <View style={{ gap: 20 }}>
-          <IconButton name="arrow-back" onPress={() => router.back()} />
+          <IconButton name="arrow-back" onPress={goBack} />
           <View style={{ gap: 8 }}>
             <Text variant="display">{mode === 'entrar' ? 'Entra con tu correo' : 'Crea tu cuenta'}</Text>
             <Text variant="caption" style={{ fontSize: 15 }}>
-              {mode === 'entrar' ? 'Usa la misma cuenta de sionmarket.com si ya tienes una.' : 'Solo necesitas un correo y una clave de 6 caracteres o más.'}
+              {mode === 'entrar' ? 'Usa la misma cuenta de sionmarket.app si ya tienes una.' : 'Solo necesitas un correo y una clave de 6 caracteres o más.'}
             </Text>
           </View>
           <TextInput

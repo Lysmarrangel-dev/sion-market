@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ApiError } from '@sionmarket/contracts';
 import { createClient, type Session as SupabaseSession } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import { AppState, Platform } from 'react-native';
 
 /**
@@ -25,7 +27,8 @@ export const supabase = online
         storage: Platform.OS === 'web' ? undefined : AsyncStorage,
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: false,
+        // On web, Google sends the user back to /app with the session in the URL.
+        detectSessionInUrl: Platform.OS === 'web',
       },
     })
   : null;
@@ -113,6 +116,8 @@ const AUTH_MESSAGES: Record<string, string> = {
   over_sms_send_rate_limit: 'Demasiados intentos. Espera un momento y vuelve a intentar.',
   over_email_send_rate_limit: 'Demasiados intentos. Espera un momento y vuelve a intentar.',
   phone_provider_disabled: 'Todavía no podemos enviar SMS. Entra con tu correo mientras tanto.',
+  provider_disabled: 'El acceso con Google todavía no está activo. Entra con tu correo mientras tanto.',
+  validation_failed: 'El acceso con Google todavía no está activo. Entra con tu correo mientras tanto.',
   sms_send_failed: 'No pudimos enviar el SMS. Revisa el número o entra con tu correo.',
 };
 
@@ -142,6 +147,41 @@ export const auth = {
     authError(error);
     if (data.session) apply(data.session);
     return { needsConfirmation: !data.session };
+  },
+  /**
+   * Google sign-in. On web the page leaves for Google and comes back to /app, where the
+   * Supabase client reads the session from the URL. On the phone it opens an auth browser
+   * and returns to the sionmarket:// scheme with the tokens. Returns false if cancelled.
+   */
+  async signInWithGoogle() {
+    if (Platform.OS === 'web') {
+      // The web build lives under /app on www.sionmarket.app; locally it is served at the root.
+      const base = window.location.pathname.startsWith('/app') ? '/app' : '';
+      const { error } = await supabase!.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}${base}` },
+      });
+      authError(error);
+      return true;
+    }
+    const redirectTo = Linking.createURL('/');
+    const { data, error } = await supabase!.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo, skipBrowserRedirect: true },
+    });
+    authError(error);
+    const result = await WebBrowser.openAuthSessionAsync(data.url!, redirectTo);
+    if (result.type !== 'success') return false;
+    const params = new URLSearchParams(result.url.split('#')[1] ?? result.url.split('?')[1] ?? '');
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    if (params.get('error') || !access_token || !refresh_token) {
+      throw new ApiRequestError(400, 'AUTH', params.get('error_description') ?? 'No pudimos entrar con Google.');
+    }
+    const next = await supabase!.auth.setSession({ access_token, refresh_token });
+    authError(next.error);
+    apply(next.data.session);
+    return true;
   },
   async logout() {
     if (supabase) await supabase.auth.signOut().catch(() => {});

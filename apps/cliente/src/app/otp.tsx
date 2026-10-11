@@ -8,6 +8,7 @@ import { IconButton } from '@/components/icon-button';
 import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { ApiRequestError, auth, online } from '@/lib/api';
+import { goBack } from '@/lib/nav';
 
 const LENGTH = 6;
 
@@ -58,7 +59,7 @@ export default function Otp() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.surface }}>
       <View style={styles.container}>
-        <IconButton name="arrow-back" onPress={() => router.back()} />
+        <IconButton name="arrow-back" onPress={goBack} />
         <View style={{ gap: 8, marginTop: 24 }}>
           <Text variant="display">Escribe el código</Text>
           <Text variant="caption" style={{ fontSize: 15 }}>

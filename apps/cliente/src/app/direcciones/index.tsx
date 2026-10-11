@@ -8,6 +8,7 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Text } from '@/components/text';
 import { Colors, Radius } from '@/constants/theme';
 import { inCoverage, useAddresses } from '@/store/addresses';
+import { goBack } from '@/lib/nav';
 
 const aliasIcon = (alias: string) =>
   alias.toLowerCase().includes('casa') ? 'home' : alias.toLowerCase().includes('oficina') ? 'briefcase' : 'location';
@@ -32,7 +33,7 @@ export default function Direcciones() {
               onPress={() => {
                 if (!covered) return;
                 select(a.id);
-                if (elegir) router.back();
+                if (elegir) goBack();
               }}
               style={[styles.card, on && styles.cardOn, !covered && { opacity: 0.6 }]}>
               <Ionicons name={aliasIcon(a.alias)} size={22} color={on ? Colors.black : Colors.orangeDeep} />

@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import { Colors, Fonts, Radius } from '@/constants/theme';
 import { getProduct, getRestaurant, type ModifierGroup } from '@/data/catalog';
 import { confirm } from '@/lib/confirm';
 import { unitPrice, useCart, type SelectedOption } from '@/store/cart';
+import { goBack } from '@/lib/nav';
 
 // Human-readable rule for a modifier group (RF-C04).
 function ruleText(g: ModifierGroup) {
@@ -61,7 +62,7 @@ export default function ProductoScreen() {
       if (!ok) return;
     }
     cart.add({ product, quantity, options, note: note.trim() || undefined });
-    router.back();
+    goBack();
   };
 
   return (
@@ -137,7 +138,7 @@ export default function ProductoScreen() {
       </ScrollView>
 
       <View style={[styles.close, { top: 16 }]}>
-        <IconButton name="close" light onPress={() => router.back()} />
+        <IconButton name="close" light onPress={goBack} />
       </View>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>

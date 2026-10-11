@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { useOrders } from '@/store/orders';
+import { goBack } from '@/lib/nav';
 
 // RF-C08 problem categories.
 const REASONS = ['Pedido incompleto', 'Producto equivocado', 'Comida en mal estado', 'Entrega tardía', 'Conducta del repartidor', 'Otro'];
@@ -33,7 +34,7 @@ export default function Reportar() {
           <Text variant="caption" style={{ textAlign: 'center' }}>
             «{order.report.reason}» en el pedido {order.code}. Soporte te escribirá pronto.
           </Text>
-          <Button title="Listo" onPress={() => router.back()} style={{ alignSelf: 'stretch', marginTop: 12 }} />
+          <Button title="Listo" onPress={goBack} style={{ alignSelf: 'stretch', marginTop: 12 }} />
         </View>
       </SafeAreaView>
     );

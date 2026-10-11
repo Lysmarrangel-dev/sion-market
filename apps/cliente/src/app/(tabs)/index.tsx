@@ -9,11 +9,13 @@ import { AngleStripes } from '@/components/angle-stripes';
 import { CartBar } from '@/components/cart-bar';
 import { IconButton } from '@/components/icon-button';
 import { Logo } from '@/components/logo';
-import { RestaurantCard } from '@/components/restaurant-card';
+import { RestaurantCard, RestaurantGrid } from '@/components/restaurant-card';
 import { Text } from '@/components/text';
 import { BrandGradient, Colors, Radius } from '@/constants/theme';
 import { CATEGORIES, getRestaurant, RESTAURANTS } from '@/data/catalog';
 import { isActive, STATUS_INFO } from '@/data/order-states';
+import { CONTENT_MAX, useLayout } from '@/lib/layout';
+import { useCart } from '@/store/cart';
 import { useAddresses } from '@/store/addresses';
 import { useOrders } from '@/store/orders';
 
@@ -21,15 +23,18 @@ export default function Home() {
   const popular = [...RESTAURANTS].filter((r) => r.open).sort((a, b) => b.rating - a.rating);
   const { selected } = useAddresses();
   const { orders } = useOrders();
+  const { wide, columns } = useLayout();
+  const { count } = useCart();
   const active = orders.find((o) => isActive(o.status));
   // RF-C03: previous orders on the home screen, one per restaurant.
   const previous = [...new Map(orders.filter((o) => o.status === 'ENTREGADO').map((o) => [o.restaurantId, o])).values()];
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: Colors.background }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.page, wide && { paddingTop: 12, paddingHorizontal: 8 }]} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Logo kind="isotipo" height={40} />
+          {/* On wide screens the top navigation already carries the logo. */}
+          {wide ? null : <Logo kind="isotipo" height={40} />}
           <Pressable
             style={{ flex: 1 }}
             accessibilityRole="button"
@@ -55,12 +60,12 @@ export default function Home() {
           </Text>
         </Pressable>
 
-        <LinearGradient colors={BrandGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>
-          <AngleStripes count={4} />
+        <LinearGradient colors={BrandGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.banner, wide && styles.bannerWide]}>
+          <AngleStripes count={wide ? 7 : 4} />
           <Text variant="label" style={{ color: Colors.white }}>
             Solo esta semana
           </Text>
-          <Text variant="title" style={{ color: Colors.white, maxWidth: 220 }}>
+          <Text variant="title" style={[{ color: Colors.white, maxWidth: 220 }, wide && { fontSize: 34, lineHeight: 40, maxWidth: 460 }]}>
             Tu primer delivery es gratis
           </Text>
           <View style={styles.code}>
@@ -130,23 +135,31 @@ export default function Home() {
         <Text variant="title" style={styles.section}>
           Populares cerca de ti
         </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 16 }}>
-          {popular.map((r) => (
-            <RestaurantCard key={r.id} restaurant={r} compact />
-          ))}
-        </ScrollView>
+        {wide ? (
+          // A mouse can't swipe a carousel: show the top picks as one row of the grid.
+          <View style={{ paddingHorizontal: 16 }}>
+            <RestaurantGrid restaurants={popular.slice(0, columns)} />
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 16 }}>
+            {popular.map((r) => (
+              <RestaurantCard key={r.id} restaurant={r} compact />
+            ))}
+          </ScrollView>
+        )}
 
         <Text variant="title" style={styles.section}>
           Todos los restaurantes
         </Text>
-        <View style={{ gap: 14, paddingHorizontal: 16 }}>
-          {RESTAURANTS.map((r) => (
-            <RestaurantCard key={r.id} restaurant={r} />
-          ))}
+        <View style={{ paddingHorizontal: 16 }}>
+          <RestaurantGrid restaurants={RESTAURANTS} />
         </View>
       </ScrollView>
 
-      <Pressable style={styles.ai} onPress={() => router.push('/asistente')}>
+      <Pressable
+        style={[styles.ai, wide && { right: 24, bottom: count ? 90 : 24 }]}
+        onPress={() => router.push('/asistente')}
+        accessibilityLabel="Abrir Sion IA">
         <Ionicons name="sparkles" size={22} color={Colors.white} />
       </Pressable>
       <CartBar />
@@ -155,6 +168,8 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
+  page: { width: '100%', maxWidth: CONTENT_MAX, alignSelf: 'center', paddingBottom: 110 },
+  bannerWide: { minHeight: 200, padding: 32, justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10 },
   search: {
     marginHorizontal: 16,

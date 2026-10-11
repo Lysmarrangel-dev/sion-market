@@ -2,7 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 
+import { ScreenFrame } from '@/components/screen-frame';
+import { WebNav } from '@/components/web-nav';
 import { Colors, Fonts } from '@/constants/theme';
+import { useLayout } from '@/lib/layout';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -12,11 +15,21 @@ function icon(name: IconName, active: IconName) {
   };
 }
 
+// Home and search lay out their own wide content; orders and profile read best as a column.
+const WIDE_SCREENS = new Set(['index', 'buscar']);
+
 export default function TabsLayout() {
+  const { wide } = useLayout();
   return (
     <Tabs
+      tabBar={wide ? (props) => <WebNav {...props} /> : undefined}
+      screenLayout={({ route, children }) => (
+        <ScreenFrame frame={WIDE_SCREENS.has(route.name) ? 'wide' : 'column'}>{children}</ScreenFrame>
+      )}
       screenOptions={{
         headerShown: false,
+        tabBarPosition: wide ? 'top' : 'bottom',
+        sceneStyle: { backgroundColor: Colors.background },
         tabBarActiveTintColor: Colors.orangeDeep,
         tabBarInactiveTintColor: Colors.textMuted,
         tabBarLabelStyle: { fontFamily: Fonts.headingMedium, fontSize: 11 },
