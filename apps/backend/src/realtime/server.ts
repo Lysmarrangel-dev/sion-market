@@ -1,10 +1,10 @@
 import type { Server as HttpServer } from 'node:http';
-import { JwtService } from '@nestjs/jwt';
 import { RiderLocation, RT, Subscribe, type RiderPosition, type Role } from '@sionmarket/contracts';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { Redis } from 'ioredis';
 import { Server, type Socket } from 'socket.io';
 import { RT_CHANNEL, rooms, type RealtimeMessage } from '../common/redis.module.js';
+import { UserDirectory, type SupabaseTokenVerifier } from '../common/supabase-auth.js';
 import type { Db } from '../db/client.js';
 import { orders, restaurants } from '../db/schema.js';
 
@@ -19,16 +19,15 @@ type Ack = (res: { ok: boolean; error?: string }) => void;
  * follow what, relays events published on Redis, and ingests rider positions.
  * Several copies can run behind Nginx; each subscribes to the same Redis channel.
  */
-export function createRealtimeServer(opts: { http: HttpServer; db: Db; redis: Redis; jwtSecret: string; corsOrigin: string[] | true }) {
-  const { db, redis } = opts;
-  const jwt = new JwtService({ secret: opts.jwtSecret });
+export function createRealtimeServer(opts: { http: HttpServer; db: Db; redis: Redis; verifier: SupabaseTokenVerifier; corsOrigin: string[] | true }) {
+  const { db, redis, verifier } = opts;
+  const directory = new UserDirectory(db);
   const io = new Server(opts.http, { path: '/ws', cors: { origin: opts.corsOrigin } });
 
   io.use(async (socket, next) => {
     try {
       const token = String(socket.handshake.auth?.token ?? '');
-      const payload = await jwt.verifyAsync<{ sub: string; roles: Role[] }>(token);
-      socket.data.user = { id: payload.sub, roles: payload.roles } satisfies SocketUser;
+      socket.data.user = (await directory.resolve(await verifier.verify(token))) satisfies SocketUser;
       next();
     } catch {
       next(new Error('UNAUTHORIZED'));

@@ -8,7 +8,8 @@ import { RT, type OrderStatusEvent, type RiderPosition } from '@sionmarket/contr
 import { Redis } from 'ioredis';
 import { io as connect, type Socket } from 'socket.io-client';
 import { createDb } from '../src/db/client.js';
-import { DEMO_PHONES } from '../src/db/seed.js';
+import { DEMO_USERS } from '../src/db/seed.js';
+import { SupabaseTokenVerifier } from '../src/common/supabase-auth.js';
 import { createRealtimeServer } from '../src/realtime/server.js';
 import { OutboxRelay } from '../src/worker/outbox-relay.js';
 import { JobProcessors } from '../src/worker/processors.js';
@@ -31,7 +32,7 @@ before(async () => {
   worker = await NestFactory.createApplicationContext(WorkerModule, { logger: ['error'] });
   relay = worker.get(OutboxRelay);
   const http = createServer();
-  rt = createRealtimeServer({ http, db: conn.db, redis, jwtSecret: process.env.JWT_SECRET!, corsOrigin: true });
+  rt = createRealtimeServer({ http, db: conn.db, redis, verifier: new SupabaseTokenVerifier({ supabaseUrl: process.env.SUPABASE_URL, jwtSecret: process.env.SUPABASE_JWT_SECRET }), corsOrigin: true });
   await rt.ready;
   await new Promise<void>((r) => http.listen(0, r));
   url = `http://127.0.0.1:${(http.address() as AddressInfo).port}`;
@@ -88,7 +89,7 @@ test('sin token no conecta', async () => {
 
 test('el restaurante recibe el pedido nuevo y el cliente ve cada cambio al instante', async () => {
   const customer = await ctx.api.login('+584147778899');
-  const resto = await ctx.api.login(DEMO_PHONES.restaurant);
+  const resto = await ctx.api.login(DEMO_USERS.restaurant.phone);
   const restoSocket = await socket(resto.accessToken);
   assert.deepEqual(await emit(restoSocket, 'suscribir', { restaurantId: 'pollos-el-cocuy' }), { ok: true });
 
@@ -133,9 +134,9 @@ test('si el restaurante no responde, el pedido pasa a RECHAZADO solo', async () 
 
 test('la ubicación del repartidor llega al cliente que sigue el pedido', async () => {
   const customer = await ctx.api.login('+584129990000');
-  const resto = await ctx.api.login(DEMO_PHONES.restaurant);
-  const admin = await ctx.api.login(DEMO_PHONES.admin);
-  const rider = await ctx.api.login(DEMO_PHONES.rider);
+  const resto = await ctx.api.login(DEMO_USERS.restaurant.phone);
+  const admin = await ctx.api.login(DEMO_USERS.admin.phone);
+  const rider = await ctx.api.login(DEMO_USERS.rider.phone);
   const orderId = await placeOrder(customer.accessToken);
 
   const inbox = await ctx.api.call('GET', '/restaurantes/pollos-el-cocuy/pedidos?estado=PENDIENTE', undefined, resto.accessToken);

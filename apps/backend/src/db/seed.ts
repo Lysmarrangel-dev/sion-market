@@ -18,12 +18,15 @@ type Demo = {
   coupons: { code: string; label: string; target: 'productos' | 'delivery'; percent: number }[];
 };
 
-/** Demo accounts: sign in with OTP using these phones. */
-export const DEMO_PHONES = {
-  admin: '+584120000009',
-  rider: '+584120000002',
+/**
+ * Demo accounts with fixed ids. In tests a token is minted for these ids; on a real Supabase
+ * project, give real accounts their roles with `db:rol` instead.
+ */
+export const DEMO_USERS = {
+  admin: { id: '00000000-0000-4000-8000-000000000009', phone: '+584120000009' },
+  rider: { id: '00000000-0000-4000-8000-000000000002', phone: '+584120000002' },
   /** Owner of every demo restaurant. */
-  restaurant: '+584120000001',
+  restaurant: { id: '00000000-0000-4000-8000-000000000001', phone: '+584120000001' },
 } as const;
 
 const upsert = <T extends { id: unknown }>(t: T) => ({ target: t.id as never });
@@ -33,17 +36,15 @@ export async function seed(db: Db) {
   const ring = [...demo.zone.ring, demo.zone.ring[0]!].map(([lng, lat]) => `${lng} ${lat}`).join(', ');
 
   await db.transaction(async (tx) => {
-    const [admin, rider, owner] = await tx
+    const [, , owner] = await tx
       .insert(s.users)
       .values([
-        { phone: DEMO_PHONES.admin, name: 'Admin SionMarket', roles: ['admin'] },
-        { phone: DEMO_PHONES.rider, name: 'José Luis Pérez', roles: ['repartidor'] },
-        { phone: DEMO_PHONES.restaurant, name: 'Dueño de restaurantes demo', roles: ['restaurante'] },
+        { ...DEMO_USERS.admin, name: 'Admin SionMarket', roles: ['admin'] },
+        { ...DEMO_USERS.rider, name: 'José Luis Pérez', roles: ['repartidor'] },
+        { ...DEMO_USERS.restaurant, name: 'Dueño de restaurantes demo', roles: ['restaurante'] },
       ])
-      .onConflictDoUpdate({ target: s.users.phone, set: { roles: sql`excluded.roles` } })
+      .onConflictDoUpdate({ target: s.users.id, set: { roles: sql`excluded.roles` } })
       .returning();
-    void admin;
-    void rider;
 
     await tx
       .insert(s.zones)
@@ -81,5 +82,5 @@ if (import.meta.main) {
   const { db, sql: conn } = createDb(url, 1);
   await seed(db);
   await conn.end();
-  console.log('Datos demo cargados. Cuentas:', DEMO_PHONES);
+  console.log('Datos demo cargados.');
 }

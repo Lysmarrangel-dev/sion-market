@@ -1,15 +1,14 @@
 # Producción en una VPS Ubuntu: docker compose -f infra/docker-compose.prod.yml --env-file .env up -d
 # La misma imagen corre los tres procesos del backend; Nginx termina HTTPS delante de api y realtime.
+# La base de datos y el login son Supabase: DATABASE_URL, SUPABASE_URL van en .env (ver apps/backend/.env.example).
 x-backend: &backend
   image: ${BACKEND_IMAGE:-ghcr.io/lysmarrangel-dev/sionmarket-backend:latest}
   restart: unless-stopped
   env_file: .env
   environment:
     NODE_ENV: production
-    DATABASE_URL: postgres://sionmarket:${POSTGRES_PASSWORD}@postgres:5432/sionmarket
     REDIS_URL: redis://redis:6379
   depends_on:
-    postgres: { condition: service_healthy }
     redis: { condition: service_started }
     migrate: { condition: service_completed_successfully }
 
@@ -17,11 +16,7 @@ services:
   migrate:
     image: ${BACKEND_IMAGE:-ghcr.io/lysmarrangel-dev/sionmarket-backend:latest}
     env_file: .env
-    environment:
-      DATABASE_URL: postgres://sionmarket:${POSTGRES_PASSWORD}@postgres:5432/sionmarket
     command: ['node', 'dist/db/migrate.js']
-    depends_on:
-      postgres: { condition: service_healthy }
 
   api:
     <<: *backend
@@ -40,19 +35,6 @@ services:
     command: ['node', 'dist/main-worker.js']
     healthcheck: { disable: true }
 
-  postgres:
-    image: postgis/postgis:16-3.5
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: sionmarket
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: sionmarket
-    volumes: [pgdata:/var/lib/postgresql/data]
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U sionmarket']
-      interval: 5s
-      retries: 10
-
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -70,5 +52,4 @@ services:
     depends_on: [api, realtime]
 
 volumes:
-  pgdata:
   redisdata:

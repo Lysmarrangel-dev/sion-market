@@ -1,6 +1,12 @@
-CREATE EXTENSION IF NOT EXISTS postgis;
+-- PostGIS goes in the `extensions` schema, as Supabase recommends. If it is already enabled
+-- elsewhere this is a no-op. The connection's search_path includes `extensions`.
+CREATE SCHEMA IF NOT EXISTS extensions;
 --> statement-breakpoint
-CREATE TABLE "addresses" (
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA extensions;
+--> statement-breakpoint
+CREATE SCHEMA IF NOT EXISTS "sionmarket";
+--> statement-breakpoint
+CREATE TABLE "sionmarket"."addresses" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"alias" text NOT NULL,
@@ -12,14 +18,14 @@ CREATE TABLE "addresses" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "categories" (
+CREATE TABLE "sionmarket"."categories" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"icon" text NOT NULL,
 	"sort" integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "coupons" (
+CREATE TABLE "sionmarket"."coupons" (
 	"code" text PRIMARY KEY NOT NULL,
 	"label" text NOT NULL,
 	"target" text NOT NULL,
@@ -28,21 +34,28 @@ CREATE TABLE "coupons" (
 	"expires_at" timestamp with time zone
 );
 --> statement-breakpoint
-CREATE TABLE "coverage_waitlist" (
+CREATE TABLE "sionmarket"."coverage_waitlist" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"location" geometry(Point,4326) NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "exchange_rates" (
+CREATE TABLE "sionmarket"."device_tokens" (
+	"token" text PRIMARY KEY NOT NULL,
+	"user_id" uuid NOT NULL,
+	"platform" text NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "sionmarket"."exchange_rates" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"rate" numeric(12, 4) NOT NULL,
 	"source" text NOT NULL,
 	"fetched_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "modifier_groups" (
+CREATE TABLE "sionmarket"."modifier_groups" (
 	"id" text PRIMARY KEY NOT NULL,
 	"restaurant_id" text NOT NULL,
 	"name" text NOT NULL,
@@ -51,7 +64,7 @@ CREATE TABLE "modifier_groups" (
 	"max" integer DEFAULT 1 NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "modifier_options" (
+CREATE TABLE "sionmarket"."modifier_options" (
 	"id" text PRIMARY KEY NOT NULL,
 	"group_id" text NOT NULL,
 	"name" text NOT NULL,
@@ -59,7 +72,7 @@ CREATE TABLE "modifier_options" (
 	"sort" integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "order_items" (
+CREATE TABLE "sionmarket"."order_items" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"order_id" uuid NOT NULL,
 	"product_id" text NOT NULL,
@@ -70,7 +83,7 @@ CREATE TABLE "order_items" (
 	"note" text
 );
 --> statement-breakpoint
-CREATE TABLE "order_status_events" (
+CREATE TABLE "sionmarket"."order_status_events" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"order_id" uuid NOT NULL,
 	"status" text NOT NULL,
@@ -80,7 +93,7 @@ CREATE TABLE "order_status_events" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "orders" (
+CREATE TABLE "sionmarket"."orders" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"code" text NOT NULL,
 	"customer_id" uuid NOT NULL,
@@ -104,17 +117,7 @@ CREATE TABLE "orders" (
 	CONSTRAINT "orders_code_unique" UNIQUE("code")
 );
 --> statement-breakpoint
-CREATE TABLE "otp_codes" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"phone" text NOT NULL,
-	"code_hash" text NOT NULL,
-	"attempts" integer DEFAULT 0 NOT NULL,
-	"expires_at" timestamp with time zone NOT NULL,
-	"consumed_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "outbox_events" (
+CREATE TABLE "sionmarket"."outbox_events" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"type" text NOT NULL,
 	"aggregate_id" text NOT NULL,
@@ -123,14 +126,14 @@ CREATE TABLE "outbox_events" (
 	"processed_at" timestamp with time zone
 );
 --> statement-breakpoint
-CREATE TABLE "product_modifier_groups" (
+CREATE TABLE "sionmarket"."product_modifier_groups" (
 	"product_id" text NOT NULL,
 	"group_id" text NOT NULL,
 	"sort" integer DEFAULT 0 NOT NULL,
 	CONSTRAINT "product_modifier_groups_product_id_group_id_pk" PRIMARY KEY("product_id","group_id")
 );
 --> statement-breakpoint
-CREATE TABLE "products" (
+CREATE TABLE "sionmarket"."products" (
 	"id" text PRIMARY KEY NOT NULL,
 	"restaurant_id" text NOT NULL,
 	"section" text NOT NULL,
@@ -143,17 +146,7 @@ CREATE TABLE "products" (
 	"sort" integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "refresh_tokens" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" uuid NOT NULL,
-	"token_hash" text NOT NULL,
-	"expires_at" timestamp with time zone NOT NULL,
-	"revoked_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "refresh_tokens_token_hash_unique" UNIQUE("token_hash")
-);
---> statement-breakpoint
-CREATE TABLE "restaurants" (
+CREATE TABLE "sionmarket"."restaurants" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"category_id" text NOT NULL,
@@ -178,18 +171,18 @@ CREATE TABLE "restaurants" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "users" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"phone" text NOT NULL,
-	"name" text,
+CREATE TABLE "sionmarket"."users" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"phone" text,
 	"email" text,
+	"name" text,
 	"photo_url" text,
 	"roles" text[] DEFAULT '{cliente}' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "users_phone_unique" UNIQUE("phone")
 );
 --> statement-breakpoint
-CREATE TABLE "zones" (
+CREATE TABLE "sionmarket"."zones" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"area" geometry(Polygon,4326) NOT NULL,
@@ -197,37 +190,57 @@ CREATE TABLE "zones" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "addresses" ADD CONSTRAINT "addresses_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "addresses" ADD CONSTRAINT "addresses_zone_id_zones_id_fk" FOREIGN KEY ("zone_id") REFERENCES "public"."zones"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "coverage_waitlist" ADD CONSTRAINT "coverage_waitlist_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "modifier_groups" ADD CONSTRAINT "modifier_groups_restaurant_id_restaurants_id_fk" FOREIGN KEY ("restaurant_id") REFERENCES "public"."restaurants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "modifier_options" ADD CONSTRAINT "modifier_options_group_id_modifier_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."modifier_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order_status_events" ADD CONSTRAINT "order_status_events_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "orders" ADD CONSTRAINT "orders_customer_id_users_id_fk" FOREIGN KEY ("customer_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "orders" ADD CONSTRAINT "orders_restaurant_id_restaurants_id_fk" FOREIGN KEY ("restaurant_id") REFERENCES "public"."restaurants"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "orders" ADD CONSTRAINT "orders_rider_id_users_id_fk" FOREIGN KEY ("rider_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "orders" ADD CONSTRAINT "orders_zone_id_zones_id_fk" FOREIGN KEY ("zone_id") REFERENCES "public"."zones"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "product_modifier_groups" ADD CONSTRAINT "product_modifier_groups_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "product_modifier_groups" ADD CONSTRAINT "product_modifier_groups_group_id_modifier_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."modifier_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "products" ADD CONSTRAINT "products_restaurant_id_restaurants_id_fk" FOREIGN KEY ("restaurant_id") REFERENCES "public"."restaurants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "refresh_tokens" ADD CONSTRAINT "refresh_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "restaurants" ADD CONSTRAINT "restaurants_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "restaurants" ADD CONSTRAINT "restaurants_zone_id_zones_id_fk" FOREIGN KEY ("zone_id") REFERENCES "public"."zones"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "restaurants" ADD CONSTRAINT "restaurants_owner_user_id_users_id_fk" FOREIGN KEY ("owner_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "addresses_user_idx" ON "addresses" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "order_items_order_idx" ON "order_items" USING btree ("order_id");--> statement-breakpoint
-CREATE INDEX "order_status_events_order_idx" ON "order_status_events" USING btree ("order_id","id");--> statement-breakpoint
-CREATE INDEX "orders_customer_idx" ON "orders" USING btree ("customer_id","created_at");--> statement-breakpoint
-CREATE INDEX "orders_restaurant_status_idx" ON "orders" USING btree ("restaurant_id","status");--> statement-breakpoint
-CREATE INDEX "orders_rider_idx" ON "orders" USING btree ("rider_id");--> statement-breakpoint
-CREATE INDEX "otp_phone_created_idx" ON "otp_codes" USING btree ("phone","created_at");--> statement-breakpoint
-CREATE INDEX "outbox_pending_idx" ON "outbox_events" USING btree ("id") WHERE processed_at is null;--> statement-breakpoint
-CREATE INDEX "products_restaurant_idx" ON "products" USING btree ("restaurant_id");--> statement-breakpoint
-CREATE INDEX "restaurants_category_idx" ON "restaurants" USING btree ("category_id");
+ALTER TABLE "sionmarket"."addresses" ADD CONSTRAINT "addresses_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "sionmarket"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."addresses" ADD CONSTRAINT "addresses_zone_id_zones_id_fk" FOREIGN KEY ("zone_id") REFERENCES "sionmarket"."zones"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."coverage_waitlist" ADD CONSTRAINT "coverage_waitlist_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "sionmarket"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."device_tokens" ADD CONSTRAINT "device_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "sionmarket"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."modifier_groups" ADD CONSTRAINT "modifier_groups_restaurant_id_restaurants_id_fk" FOREIGN KEY ("restaurant_id") REFERENCES "sionmarket"."restaurants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."modifier_options" ADD CONSTRAINT "modifier_options_group_id_modifier_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "sionmarket"."modifier_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "sionmarket"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."order_status_events" ADD CONSTRAINT "order_status_events_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "sionmarket"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."orders" ADD CONSTRAINT "orders_customer_id_users_id_fk" FOREIGN KEY ("customer_id") REFERENCES "sionmarket"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."orders" ADD CONSTRAINT "orders_restaurant_id_restaurants_id_fk" FOREIGN KEY ("restaurant_id") REFERENCES "sionmarket"."restaurants"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."orders" ADD CONSTRAINT "orders_rider_id_users_id_fk" FOREIGN KEY ("rider_id") REFERENCES "sionmarket"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."orders" ADD CONSTRAINT "orders_zone_id_zones_id_fk" FOREIGN KEY ("zone_id") REFERENCES "sionmarket"."zones"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."product_modifier_groups" ADD CONSTRAINT "product_modifier_groups_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "sionmarket"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."product_modifier_groups" ADD CONSTRAINT "product_modifier_groups_group_id_modifier_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "sionmarket"."modifier_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."products" ADD CONSTRAINT "products_restaurant_id_restaurants_id_fk" FOREIGN KEY ("restaurant_id") REFERENCES "sionmarket"."restaurants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."restaurants" ADD CONSTRAINT "restaurants_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "sionmarket"."categories"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."restaurants" ADD CONSTRAINT "restaurants_zone_id_zones_id_fk" FOREIGN KEY ("zone_id") REFERENCES "sionmarket"."zones"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sionmarket"."restaurants" ADD CONSTRAINT "restaurants_owner_user_id_users_id_fk" FOREIGN KEY ("owner_user_id") REFERENCES "sionmarket"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "addresses_user_idx" ON "sionmarket"."addresses" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "device_tokens_user_idx" ON "sionmarket"."device_tokens" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "order_items_order_idx" ON "sionmarket"."order_items" USING btree ("order_id");--> statement-breakpoint
+CREATE INDEX "order_status_events_order_idx" ON "sionmarket"."order_status_events" USING btree ("order_id","id");--> statement-breakpoint
+CREATE INDEX "orders_customer_idx" ON "sionmarket"."orders" USING btree ("customer_id","created_at");--> statement-breakpoint
+CREATE INDEX "orders_restaurant_status_idx" ON "sionmarket"."orders" USING btree ("restaurant_id","status");--> statement-breakpoint
+CREATE INDEX "orders_rider_idx" ON "sionmarket"."orders" USING btree ("rider_id");--> statement-breakpoint
+CREATE INDEX "outbox_pending_idx" ON "sionmarket"."outbox_events" USING btree ("id") WHERE processed_at is null;--> statement-breakpoint
+CREATE INDEX "products_restaurant_idx" ON "sionmarket"."products" USING btree ("restaurant_id");--> statement-breakpoint
+CREATE INDEX "restaurants_category_idx" ON "sionmarket"."restaurants" USING btree ("category_id");
 --> statement-breakpoint
-CREATE INDEX "zones_area_gist" ON "zones" USING gist ("area");
+CREATE INDEX "zones_area_gist" ON "sionmarket"."zones" USING gist ("area");
 --> statement-breakpoint
-CREATE INDEX "addresses_location_gist" ON "addresses" USING gist ("location");
+CREATE INDEX "addresses_location_gist" ON "sionmarket"."addresses" USING gist ("location");
 --> statement-breakpoint
-CREATE INDEX "restaurants_location_gist" ON "restaurants" USING gist ("location");
+CREATE INDEX "restaurants_location_gist" ON "sionmarket"."restaurants" USING gist ("location");
+--> statement-breakpoint
+-- Wake the worker as soon as an event is written, instead of waiting for the next poll.
+CREATE OR REPLACE FUNCTION sionmarket.notify_outbox() RETURNS trigger AS $$
+BEGIN
+  PERFORM pg_notify('outbox', NEW.id::text);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+--> statement-breakpoint
+CREATE TRIGGER outbox_notify AFTER INSERT ON "sionmarket"."outbox_events" FOR EACH ROW EXECUTE FUNCTION sionmarket.notify_outbox();
+--> statement-breakpoint
+-- On Supabase, keep the anon and authenticated API roles out of this schema entirely.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE ALL ON SCHEMA sionmarket FROM anon, authenticated;
+    REVOKE ALL ON ALL TABLES IN SCHEMA sionmarket FROM anon, authenticated;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA sionmarket REVOKE ALL ON TABLES FROM anon, authenticated;
+  END IF;
+END $$;

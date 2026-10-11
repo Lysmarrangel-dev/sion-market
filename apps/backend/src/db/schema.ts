@@ -8,12 +8,18 @@ import {
   integer,
   jsonb,
   numeric,
-  pgTable,
+  pgSchema,
   primaryKey,
   text,
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
+
+/**
+ * Every table lives in the `sionmarket` schema, not `public`: Supabase exposes `public` through
+ * its REST API with the anon key, and these tables must only be reachable through the backend.
+ */
+export const sm = pgSchema('sionmarket');
 
 // Tables are grouped by the module that owns them. A module reads another module's
 // tables only through that module's service.
@@ -26,41 +32,22 @@ const point = (name: string) => geometry(name, { type: 'point', mode: 'xy', srid
 const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 
 // ── identidad ──────────────────────────────────────────────────────────────
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  phone: text('phone').notNull().unique(),
-  name: text('name'),
+/**
+ * One row per Supabase Auth user (same id as auth.users), created on their first request.
+ * Roles live here, never in the token's user metadata, which the user can edit.
+ */
+export const users = sm.table('users', {
+  id: uuid('id').primaryKey(),
+  phone: text('phone').unique(),
   email: text('email'),
+  name: text('name'),
   photoUrl: text('photo_url'),
   roles: text('roles').array().notNull().default(sql`'{cliente}'`),
   createdAt: createdAt(),
 });
 
-export const otpCodes = pgTable(
-  'otp_codes',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    phone: text('phone').notNull(),
-    codeHash: text('code_hash').notNull(),
-    attempts: integer('attempts').notNull().default(0),
-    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-    consumedAt: timestamp('consumed_at', { withTimezone: true }),
-    createdAt: createdAt(),
-  },
-  (t) => [index('otp_phone_created_idx').on(t.phone, t.createdAt)],
-);
-
-export const refreshTokens = pgTable('refresh_tokens', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  tokenHash: text('token_hash').notNull().unique(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  revokedAt: timestamp('revoked_at', { withTimezone: true }),
-  createdAt: createdAt(),
-});
-
 // ── cobertura ──────────────────────────────────────────────────────────────
-export const zones = pgTable('zones', {
+export const zones = sm.table('zones', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   area: polygon('area').notNull(),
@@ -68,7 +55,7 @@ export const zones = pgTable('zones', {
   createdAt: createdAt(),
 });
 
-export const coverageWaitlist = pgTable('coverage_waitlist', {
+export const coverageWaitlist = sm.table('coverage_waitlist', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   location: point('location').notNull(),
@@ -76,7 +63,7 @@ export const coverageWaitlist = pgTable('coverage_waitlist', {
 });
 
 // ── usuarios ───────────────────────────────────────────────────────────────
-export const addresses = pgTable(
+export const addresses = sm.table(
   'addresses',
   {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -92,7 +79,7 @@ export const addresses = pgTable(
   (t) => [index('addresses_user_idx').on(t.userId)],
 );
 
-export const deviceTokens = pgTable(
+export const deviceTokens = sm.table(
   'device_tokens',
   {
     token: text('token').primaryKey(),
@@ -104,14 +91,14 @@ export const deviceTokens = pgTable(
 );
 
 // ── catalogo ───────────────────────────────────────────────────────────────
-export const categories = pgTable('categories', {
+export const categories = sm.table('categories', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   icon: text('icon').notNull(),
   sort: integer('sort').notNull().default(0),
 });
 
-export const restaurants = pgTable(
+export const restaurants = sm.table(
   'restaurants',
   {
     id: text('id').primaryKey(),
@@ -140,7 +127,7 @@ export const restaurants = pgTable(
   (t) => [index('restaurants_category_idx').on(t.categoryId)],
 );
 
-export const products = pgTable(
+export const products = sm.table(
   'products',
   {
     id: text('id').primaryKey(),
@@ -157,7 +144,7 @@ export const products = pgTable(
   (t) => [index('products_restaurant_idx').on(t.restaurantId)],
 );
 
-export const modifierGroups = pgTable('modifier_groups', {
+export const modifierGroups = sm.table('modifier_groups', {
   id: text('id').primaryKey(),
   restaurantId: text('restaurant_id').notNull().references(() => restaurants.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
@@ -166,7 +153,7 @@ export const modifierGroups = pgTable('modifier_groups', {
   max: integer('max').notNull().default(1),
 });
 
-export const modifierOptions = pgTable('modifier_options', {
+export const modifierOptions = sm.table('modifier_options', {
   id: text('id').primaryKey(),
   groupId: text('group_id').notNull().references(() => modifierGroups.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
@@ -174,7 +161,7 @@ export const modifierOptions = pgTable('modifier_options', {
   sort: integer('sort').notNull().default(0),
 });
 
-export const productModifierGroups = pgTable(
+export const productModifierGroups = sm.table(
   'product_modifier_groups',
   {
     productId: text('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
@@ -185,7 +172,7 @@ export const productModifierGroups = pgTable(
 );
 
 // ── precios ────────────────────────────────────────────────────────────────
-export const coupons = pgTable('coupons', {
+export const coupons = sm.table('coupons', {
   code: text('code').primaryKey(),
   label: text('label').notNull(),
   target: text('target', { enum: ['productos', 'delivery'] }).notNull(),
@@ -194,7 +181,7 @@ export const coupons = pgTable('coupons', {
   expiresAt: timestamp('expires_at', { withTimezone: true }),
 });
 
-export const exchangeRates = pgTable('exchange_rates', {
+export const exchangeRates = sm.table('exchange_rates', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   rate: numeric('rate', { precision: 12, scale: 4, mode: 'number' }).notNull(),
   source: text('source').notNull(),
@@ -205,7 +192,7 @@ export const exchangeRates = pgTable('exchange_rates', {
 export type AddressSnapshot = { alias: string; street: string; reference: string; latitude: number; longitude: number };
 export type OptionSnapshot = { id: string; groupId: string; name: string; priceCents: number };
 
-export const orders = pgTable(
+export const orders = sm.table(
   'orders',
   {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -236,7 +223,7 @@ export const orders = pgTable(
   ],
 );
 
-export const orderItems = pgTable(
+export const orderItems = sm.table(
   'order_items',
   {
     id: bigserial('id', { mode: 'number' }).primaryKey(),
@@ -252,7 +239,7 @@ export const orderItems = pgTable(
 );
 
 /** Append-only log of every status change (who, when, why). */
-export const orderStatusEvents = pgTable(
+export const orderStatusEvents = sm.table(
   'order_status_events',
   {
     id: bigserial('id', { mode: 'number' }).primaryKey(),
@@ -271,7 +258,7 @@ export const orderStatusEvents = pgTable(
  * Written in the same transaction as the change that caused it, so no event is lost.
  * The worker (step 2) reads pending rows and fans them out: push, realtime, invoices.
  */
-export const outboxEvents = pgTable(
+export const outboxEvents = sm.table(
   'outbox_events',
   {
     id: bigserial('id', { mode: 'number' }).primaryKey(),

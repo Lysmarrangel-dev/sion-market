@@ -42,26 +42,32 @@ node --env-file=apps/backend/.env apps/backend/dist/main-worker.js     # worker
 ### App cliente contra el API
 
 Copia `apps/cliente/.env.example` a `apps/cliente/.env` con la IP de tu PC en la red local y corre
-`pnpm --filter @sionmarket/cliente start`. Sin ese archivo la app sigue en modo demo con los datos de prueba.
+`pnpm --filter @sionmarket/cliente start`. Para entrar con teléfono, Supabase necesita un proveedor de SMS
+(Authentication → Providers → Phone); el correo funciona sin configurar nada más. Sin ese archivo la app sigue en modo demo con los datos de prueba.
 
 Pruebas de punta a punta (usan la base `sionmarket_test`): `pnpm test`.
 
-## Cuentas demo
+## Sesión: Supabase Auth
 
-En desarrollo todos los códigos OTP son `123456` (variable `OTP_DEV_CODE`).
+El login vive en Supabase (el mismo proyecto de la web): teléfono con código por SMS, o correo y clave.
+La app manda el token de Supabase al API, que lo verifica con las llaves públicas del proyecto
+(`SUPABASE_URL`) y guarda perfil y roles en su propia tabla `sionmarket.users`.
+Todas las tablas del backend viven en el esquema `sionmarket`, que no queda expuesto a la llave pública de Supabase.
 
-| Rol | Teléfono |
-|---|---|
-| Admin | +584120000009 |
-| Restaurante (dueño de los 5 demo) | +584120000001 |
-| Repartidor | +584120000002 |
-| Cliente | cualquier otro +58… |
+Para dar un rol a una cuenta que ya entró al menos una vez:
+
+```bash
+pnpm --filter @sionmarket/backend db:rol --correo dueno@ejemplo.com --rol restaurante --restaurante <id-restaurante>
+pnpm --filter @sionmarket/backend db:rol --telefono +584141234567 --rol repartidor
+```
+
+Las pruebas generan sus propios tokens con `SUPABASE_JWT_SECRET` de `.env.test`; los usuarios demo
+(admin, restaurante, repartidor) están en `apps/backend/src/db/seed.ts`.
 
 ## Endpoints (prefijo `/v1`)
 
 | Método | Ruta | Quién | Para qué |
 |---|---|---|---|
-| POST | `/auth/otp` · `/auth/otp/verificar` · `/auth/refresh` · `/auth/logout` | todos | Sesión por teléfono |
 | GET/PATCH | `/yo` | sesión | Perfil |
 | GET/POST/DELETE | `/yo/direcciones` | sesión | Direcciones (valida cobertura) |
 | POST | `/cobertura/verificar` · `/cobertura/avisame` | público / sesión | Zona de cobertura y lista de espera |

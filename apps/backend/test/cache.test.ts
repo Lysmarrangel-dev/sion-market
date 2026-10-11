@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { DEMO_PHONES } from '../src/db/seed.js';
+import { DEMO_USERS } from '../src/db/seed.js';
 import { setup } from './helpers.js';
 
 let ctx: Awaited<ReturnType<typeof setup>>;
@@ -17,7 +17,7 @@ test('marcar agotado se ve de inmediato aunque el menú esté en caché', async 
   const first = await ctx.api.call('GET', '/restaurantes/la-parrilla-yaracuy');
   assert.equal(burger(first.body).soldOut, false);
 
-  const resto = (await ctx.api.login(DEMO_PHONES.restaurant)).accessToken;
+  const resto = (await ctx.api.login(DEMO_USERS.restaurant.phone)).accessToken;
   const res = await ctx.api.call('PATCH', '/restaurantes/la-parrilla-yaracuy/productos/p2/disponibilidad', { soldOut: true }, resto);
   assert.equal(res.status, 200);
 

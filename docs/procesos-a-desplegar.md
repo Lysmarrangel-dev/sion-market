@@ -15,10 +15,10 @@ Tamaño inicial sugerido: 4 vCPU, 8 GB RAM, 160 GB SSD. Staging puede ir en una 
 | 3 | **realtime** | backend `main-realtime` (Socket.IO + adaptador Redis) | 1 (escala a 2+) | `ws.sionmarket.com` | Seguimiento, ubicación, chat, bandeja del restaurante, torre de control |
 | 4 | **worker** | backend `main-worker` (BullMQ) | 1 (escala a 2+) | interno | Push/SMS, ofertas y reasignación, vencimientos, facturas, conciliación |
 | 5 | **scheduler** | dentro del worker (tareas repetitivas de BullMQ) | 1 | interno | Tasa BCV cada hora, cancelar pedidos sin respuesta, cerrar liquidaciones diarias, limpiar datos |
-| 6 | **postgres** | PostgreSQL 16 + PostGIS | 1 | interno | Datos principales |
+| 6 | **postgres** | Supabase (Postgres administrado + PostGIS en el esquema `extensions`) | 1 | conexión "Session pooler" (5432) | Datos principales en el esquema `sionmarket`; respaldos diarios de Supabase |
 | 7 | **redis** | Redis 7 con persistencia AOF | 1 | interno | Caché, colas, GEO de repartidores, pub/sub entre procesos |
 | 8 | **migraciones** | tarea única `drizzle-kit migrate` | en cada despliegue | — | Actualiza el esquema antes de levantar la nueva versión |
-| 9 | **backups** | pg_dump/pgBackRest por cron → almacenamiento externo | diario + WAL continuo | — | Respaldo con 14 días de retención; prueba de restauración mensual |
+| 9 | **backups** | Respaldos de Supabase (diarios; recuperación a un punto en el tiempo en el plan Pro) + pg_dump semanal del esquema `sionmarket` a almacenamiento externo | diario | — | Prueba de restauración mensual |
 | 10 | **monitoreo** | Uptime Kuma + node-exporter (o Grafana Cloud gratis) | 1 | `status.sionmarket.com` | Alertas si cae el API, el WS o se llena el disco |
 
 Seguridad del servidor: firewall (solo 22, 80, 443), SSH solo con llave, fail2ban, actualizaciones automáticas de seguridad, PostgreSQL y Redis sin puerto público, secretos en archivo `.env` fuera del repo.
@@ -53,7 +53,7 @@ Seguridad del servidor: firewall (solo 22, 80, 443), SSH solo con llave, fail2ba
 | # | Servicio | Para qué | Opciones | Estado |
 |---|---|---|---|---|
 | 21 | **Push** | Estados del pedido, ofertas al repartidor | Expo Push (usa FCM y APNs por debajo) | Configurar llaves FCM y APNs |
-| 22 | **SMS / WhatsApp** | OTP y respaldo de avisos | WhatsApp Cloud API (Meta), Twilio | Por elegir |
+| 22 | **SMS / WhatsApp** | OTP (configurado como proveedor de Supabase Auth) y respaldo de avisos | WhatsApp Cloud API (Meta), Twilio | Por elegir |
 | 23 | **Mapas** | Pin de dirección, geocodificación, rutas y ETA | Google Maps Platform o Mapbox | Por elegir |
 | 24 | **Tasa de cambio** | Bs/USD oficial | Tasa BCV (consulta programada) | — |
 | 25 | **Pagos** | Pago Móvil, transferencia, tarjeta | Verificación con API del banco o conciliación manual en back office al inicio; pasarela local para tarjeta | Por elegir banco |

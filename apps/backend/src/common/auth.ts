@@ -7,12 +7,12 @@ import {
   type ExecutionContext,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import type { Role } from '@sionmarket/contracts';
 import type { FastifyRequest } from 'fastify';
 import { forbidden } from './errors.js';
+import { SupabaseTokenVerifier, UserDirectory, type AuthUser } from './supabase-auth.js';
 
-export type AuthUser = { id: string; roles: Role[] };
+export type { AuthUser };
 type AuthedRequest = FastifyRequest & { user?: AuthUser };
 
 const PUBLIC = 'public';
@@ -27,11 +27,12 @@ export const CurrentUser = createParamDecorator((_: unknown, ctx: ExecutionConte
   return ctx.switchToHttp().getRequest<AuthedRequest>().user;
 });
 
-/** Global guard: every route requires a valid access token unless marked @Public(). */
+/** Global guard: every route requires a valid Supabase access token unless marked @Public(). */
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private readonly jwt: JwtService,
+    private readonly verifier: SupabaseTokenVerifier,
+    private readonly directory: UserDirectory,
     private readonly reflector: Reflector,
   ) {}
 
@@ -42,12 +43,13 @@ export class AuthGuard implements CanActivate {
     const req = ctx.switchToHttp().getRequest<AuthedRequest>();
     const [scheme, token] = (req.headers.authorization ?? '').split(' ');
     if (scheme !== 'Bearer' || !token) throw new UnauthorizedException('Inicia sesión');
+    let claims;
     try {
-      const payload = await this.jwt.verifyAsync<{ sub: string; roles: Role[] }>(token);
-      req.user = { id: payload.sub, roles: payload.roles };
+      claims = await this.verifier.verify(token);
     } catch {
       throw new UnauthorizedException('Sesión vencida');
     }
+    req.user = await this.directory.resolve(claims);
 
     const roles = this.reflector.getAllAndOverride<Role[] | undefined>(ROLES, targets);
     if (roles && !roles.some((r) => req.user!.roles.includes(r))) throw forbidden();

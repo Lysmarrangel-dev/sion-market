@@ -8,6 +8,7 @@
     "@expo/ui": "~57.0.22",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.117.3",
     "expo": "~57.0.27",
     "expo-constants": "~57.0.21",
     "expo-device": "~57.0.2",
@@ -38,11 +39,11 @@
     "socket.io-client": "^4.8.4"
   },
   "devDependencies": {
+    "@sionmarket/contracts": "workspace:*",
     "@types/react": "~19.2.2",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.2",
-    "typescript": "~6.0.3",
-    "@sionmarket/contracts": "workspace:*"
+    "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",

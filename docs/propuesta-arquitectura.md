@@ -62,7 +62,7 @@ Cada módulo es dueño de sus tablas; otro módulo no las toca directamente, le 
 
 | Módulo | Responsabilidad | Requerimiento |
 |---|---|---|
-| **identidad** | OTP por SMS/WhatsApp, Google/Apple, sesiones (JWT corto + refresh), roles (cliente, repartidor, restaurante, admin) | RF-C01 |
+| **identidad** | Verifica los tokens de Supabase Auth (OTP por SMS, correo, Google/Apple los maneja Supabase); roles propios (cliente, repartidor, restaurante, admin) | RF-C01 |
 | **usuarios** | Perfil, direcciones con alias y pin, referidos | RF-C01, C02, C09 |
 | **cobertura** | Zonas en mapa (PostGIS), validar dirección, lista «avísame cuando lleguen» | RF-C02, back office |
 | **catalogo** | Restaurantes, horarios, monto mínimo, menú, categorías, productos, grupos de modificadores con reglas, agotados | RF-C03, C04, panel |

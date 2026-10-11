@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './common/auth.js';
 import { DbModule } from './common/db.module.js';
 import { RedisModule } from './common/redis.module.js';
 import { ErrorFilter } from './common/errors.js';
-import { config } from './config.js';
 import { CatalogoModule } from './modules/catalogo/catalogo.module.js';
 import { CoberturaModule } from './modules/cobertura/cobertura.module.js';
 import { NotificacionesModule } from './modules/notificaciones/notificaciones.module.js';
@@ -19,7 +17,6 @@ import { UsuariosModule } from './modules/usuarios/usuarios.module.js';
   imports: [
     DbModule,
     RedisModule,
-    JwtModule.register({ global: true, secret: config().JWT_SECRET }),
     IdentidadModule,
     UsuariosModule,
     CoberturaModule,

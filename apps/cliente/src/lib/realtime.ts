@@ -6,8 +6,16 @@ import { getSession, onSessionChange, online, REALTIME_URL } from '@/lib/api';
 // One socket per signed-in session. The server joins it to the user's own room, so order
 // status changes arrive without subscribing; following an order adds the rider's position.
 let socket: Socket | null = null;
+let socketUser: string | null = null;
 
 function connect() {
+  const current = getSession();
+  // A refreshed token for the same user only needs to be used on the next reconnect.
+  if (socket && current && current.user.id === socketUser) {
+    socket.auth = { token: current.accessToken };
+    return;
+  }
+  socketUser = current?.user.id ?? null;
   socket?.disconnect();
   socket = null;
   const s = getSession();
