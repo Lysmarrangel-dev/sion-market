@@ -92,7 +92,7 @@ Las pruebas generan sus propios tokens con `SUPABASE_JWT_SECRET` de `.env.test`;
 
 ## Despliegue
 
-- **Backend**: `infra/docker-compose.prod.yml` en una VPS (api ×2, realtime, worker, migraciones, PostgreSQL + PostGIS, Redis, Nginx con HTTPS).
+- **Backend**: `infra/docker-compose.prod.yml` en una VPS (api ×2, realtime, worker, migraciones, Redis, Nginx con HTTPS y certbot) contra Supabase. Paso a paso: [docs/desplegar-backend.md](docs/desplegar-backend.md). La imagen se publica sola en GitHub Packages con cada cambio en `main`.
 - **App cliente web**: proyecto de Vercel con *Root Directory* `apps/cliente` (usa `apps/cliente/vercel.json`).
 - **App cliente Android/iOS**: EAS Build y EAS Update.
 - **Web de pre-lanzamiento**: sigue igual en `sionmarket-web/`.

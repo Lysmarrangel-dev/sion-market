@@ -1,4 +1,5 @@
-# Producción en una VPS Ubuntu: docker compose -f infra/docker-compose.prod.yml --env-file .env up -d
+# Producción en una VPS Ubuntu. En el servidor: /opt/sionmarket/docker-compose.yml (copia de este archivo) y docker compose up -d
+# Guía completa: docs/desplegar-backend.md
 # La misma imagen corre los tres procesos del backend; Nginx termina HTTPS delante de api y realtime.
 # La base de datos y el login son Supabase: DATABASE_URL, SUPABASE_URL van en .env (ver apps/backend/.env.example).
 x-backend: &backend
@@ -45,11 +46,22 @@ services:
     image: nginx:1.27-alpine
     restart: unless-stopped
     ports: ['80:80', '443:443']
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
     volumes:
-      - ./nginx/sionmarket.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/templates:/etc/nginx/templates:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
     depends_on: [api, realtime]
+
+  # Renueva el certificado HTTPS; un cron del servidor recarga nginx después (ver la guía).
+  certbot:
+    image: certbot/certbot:v3.1.0
+    restart: unless-stopped
+    entrypoint: ['/bin/sh', '-c', 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done']
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
 
 volumes:
   redisdata:
