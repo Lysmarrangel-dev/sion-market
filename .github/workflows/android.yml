@@ -10,7 +10,9 @@ on:
     paths: ['apps/cliente/**', 'packages/**', 'pnpm-lock.yaml', '.github/workflows/android.yml']
   workflow_dispatch:
 
-concurrency: { group: android-${{ github.ref }}, cancel-in-progress: true }
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   apk:
