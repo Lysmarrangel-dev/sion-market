@@ -10,10 +10,13 @@ import { Price } from '@/components/price';
 import { Text } from '@/components/text';
 import { Colors, Radius } from '@/constants/theme';
 import { getRestaurant, productsOf } from '@/data/catalog';
+import { goBack } from '@/lib/nav';
+import { useLayout } from '@/lib/layout';
 
 export default function RestauranteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const { wide } = useLayout();
   const restaurant = getRestaurant(id);
   if (!restaurant) return null;
 
@@ -23,8 +26,9 @@ export default function RestauranteScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        <Image source={restaurant.image} style={styles.hero} contentFit="cover" />
-        <View style={styles.info}>
+        <Image source={restaurant.image} style={[styles.hero, wide && { height: 340 }]} contentFit="cover" />
+        <View style={wide ? styles.pageWide : undefined}>
+        <View style={[styles.info, wide && { padding: 28, marginTop: -60 }]}>
           <Text variant="display">{restaurant.name}</Text>
           <Text variant="caption">{restaurant.tags.join(' · ')}</Text>
           <View style={styles.stats}>
@@ -56,7 +60,7 @@ export default function RestauranteScreen() {
             <Text variant="title" style={{ marginBottom: 10 }}>
               {section}
             </Text>
-            <View style={{ gap: 10 }}>
+            <View style={wide ? styles.productsWide : { gap: 10 }}>
               {products
                 .filter((p) => p.section === section)
                 .map((p) => (
@@ -65,7 +69,7 @@ export default function RestauranteScreen() {
                     disabled={!restaurant.open || p.soldOut}
                     accessibilityLabel={`${p.name}${p.soldOut ? ', agotado' : ''}`}
                     onPress={() => router.push({ pathname: '/producto/[id]', params: { id: p.id } })}
-                    style={({ pressed }) => [styles.product, pressed && { opacity: 0.85 }, p.soldOut && { opacity: 0.5 }]}>
+                    style={({ pressed }) => [styles.product, wide && { width: '49.2%' }, pressed && { opacity: 0.85 }, p.soldOut && { opacity: 0.5 }]}>
                       <View style={{ flex: 1, gap: 4 }}>
                         {p.soldOut ? (
                           <Text variant="label" style={{ color: Colors.crimson, fontSize: 11 }}>
@@ -95,10 +99,11 @@ export default function RestauranteScreen() {
             </View>
           </View>
         ))}
+        </View>
       </ScrollView>
 
       <View style={[styles.topBar, { top: insets.top + 8 }]}>
-        <IconButton name="arrow-back" light onPress={() => router.back()} />
+        <IconButton name="arrow-back" light onPress={goBack} />
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <IconButton name="heart-outline" light />
           <IconButton name="share-outline" light />
@@ -132,6 +137,8 @@ function Stat({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: st
 }
 
 const styles = StyleSheet.create({
+  pageWide: { width: '100%', maxWidth: 1100, alignSelf: 'center', paddingHorizontal: 8 },
+  productsWide: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 12 },
   hero: { width: '100%', height: 260 },
   info: {
     marginTop: -28,

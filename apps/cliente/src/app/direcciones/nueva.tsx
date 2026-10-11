@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Location from 'expo-location';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { CITY_CENTER } from '@/data/catalog';
 import { inCoverage, useAddresses } from '@/store/addresses';
+import { goBack } from '@/lib/nav';
 
 const ALIASES = ['Casa', 'Oficina', 'Otro'];
 
@@ -42,7 +43,7 @@ export default function NuevaDireccion() {
       <View style={styles.map}>
         <PinPicker value={location} onChange={setLocation} />
         <View style={styles.mapTop}>
-          <IconButton name="close" light onPress={() => router.back()} />
+          <IconButton name="close" light onPress={goBack} />
           <Pressable style={styles.locate} onPress={useMyLocation}>
             <Ionicons name="locate" size={18} color={Colors.black} />
             <Text variant="bodyStrong" style={{ fontSize: 14 }}>
@@ -108,7 +109,7 @@ export default function NuevaDireccion() {
           onPress={async () => {
             try {
               await save({ id: editing?.id, alias: alias.trim(), street: street.trim(), reference: reference.trim(), location });
-              router.back();
+              goBack();
             } catch (e) {
               Alert.alert('No pudimos guardar la dirección', e instanceof Error ? e.message : 'Revisa tu conexión e intenta de nuevo.');
             }

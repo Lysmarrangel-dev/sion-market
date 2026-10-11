@@ -1,7 +1,7 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
@@ -9,124 +9,152 @@ import { Logo } from '@/components/logo';
 import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { ApiRequestError, auth, online } from '@/lib/api';
+import { useLayout } from '@/lib/layout';
 import { useProfile } from '@/store/profile';
 
 export default function Login() {
   const { update } = useProfile();
+  const { width } = useLayout();
   const [phone, setPhone] = useState('');
   const [sending, setSending] = useState(false);
+  const [google, setGoogle] = useState(false);
   const [error, setError] = useState('');
   const digits = phone.replace(/\D/g, '');
   const valid = digits.length === 10;
+  // On the split desktop layout the brand panel already shows the logo.
+  const showLogo = width < 980;
+
+  const withGoogle = async () => {
+    setError('');
+    if (!online) return router.replace('/(tabs)');
+    setGoogle(true);
+    try {
+      const done = await auth.signInWithGoogle();
+      // Web navigates away to Google; on the phone we are back with a session.
+      if (done && Platform.OS !== 'web') router.replace('/(tabs)');
+    } catch (e) {
+      setError(e instanceof ApiRequestError ? e.message : 'No pudimos entrar con Google. Revisa tu conexión.');
+    } finally {
+      if (Platform.OS !== 'web') setGoogle(false);
+    }
+  };
+
+  const sendCode = async () => {
+    setError('');
+    if (online) {
+      setSending(true);
+      try {
+        await auth.requestOtp(`+58${digits}`);
+      } catch (e) {
+        setError(e instanceof ApiRequestError ? e.message : 'No pudimos enviar el código. Revisa tu conexión.');
+        return;
+      } finally {
+        setSending(false);
+      }
+    }
+    update({ phone: digits });
+    router.push({ pathname: '/otp', params: { phone: digits } });
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.surface }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
-        <View style={{ gap: 28 }}>
-          <Logo height={64} />
-          <View style={{ gap: 8 }}>
-            <Text variant="display">Entra con tu número</Text>
-            <Text variant="caption" style={{ fontSize: 15 }}>
-              Te enviaremos un código por SMS o WhatsApp para confirmar que eres tú.
-            </Text>
-          </View>
-          <View style={styles.inputRow}>
-            <View style={styles.prefix}>
-              <Text style={{ fontSize: 18 }}>🇻🇪</Text>
-              <Text variant="bodyStrong">+58</Text>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <View style={{ gap: 28 }}>
+            {showLogo ? <Logo height={56} /> : null}
+            <View style={{ gap: 8 }}>
+              <Text variant="display">Entra a Sionmarket</Text>
+              <Text variant="caption" style={{ fontSize: 15 }}>
+                Pide comida y lo que necesites en San Felipe. Elige cómo quieres entrar.
+              </Text>
             </View>
-            <TextInput
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="414 123 4567"
-              placeholderTextColor={Colors.textMuted}
-              keyboardType="phone-pad"
-              maxLength={12}
-              style={styles.input}
-              autoFocus
-            />
-          </View>
-        </View>
 
-        <View style={{ gap: 12 }}>
-          <Text variant="caption" style={{ textAlign: 'center' }}>
-            O continúa con
-          </Text>
-          {/* RF-C01 alternate sign-up. Demo: these skip straight in. Online: email works, Google/Apple pending. */}
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            {(
-              [
-                ['logo-google', 'Google'],
-                ['logo-apple', 'Apple'],
-                ['mail-outline', 'Correo'],
-              ] as const
-            ).map(([icon, label]) => (
-              <Pressable
-                key={label}
-                style={styles.alt}
-                onPress={() => {
-                  setError('');
-                  if (!online) return router.replace('/(tabs)');
-                  if (label === 'Correo') return router.push('/correo');
-                  setError(`Entrar con ${label} llega pronto. Por ahora usa tu número o tu correo.`);
-                }}
-                accessibilityLabel={`Continuar con ${label}`}
-              >
-                <Ionicons name={icon} size={20} color={Colors.black} />
-                <Text variant="bodyStrong" style={{ fontSize: 14 }}>
-                  {label}
-                </Text>
+            <View style={{ gap: 12 }}>
+              <Pressable style={styles.provider} onPress={withGoogle} disabled={google} accessibilityRole="button">
+                {google ? <ActivityIndicator color={Colors.text} /> : <Ionicons name="logo-google" size={20} color={Colors.text} />}
+                <Text variant="bodyStrong">Continuar con Google</Text>
               </Pressable>
-            ))}
+              {Platform.OS === 'ios' ? (
+                <Pressable
+                  style={[styles.provider, { backgroundColor: Colors.black, borderColor: Colors.black }]}
+                  onPress={() => (online ? setError('Entrar con Apple llega pronto. Usa Google o tu correo.') : router.replace('/(tabs)'))}
+                  accessibilityRole="button">
+                  <Ionicons name="logo-apple" size={20} color={Colors.white} />
+                  <Text variant="bodyStrong" style={{ color: Colors.white }}>
+                    Continuar con Apple
+                  </Text>
+                </Pressable>
+              ) : null}
+              <Pressable
+                style={styles.provider}
+                onPress={() => (online ? router.push('/correo') : router.replace('/(tabs)'))}
+                accessibilityRole="button">
+                <Ionicons name="mail-outline" size={20} color={Colors.text} />
+                <Text variant="bodyStrong">Continuar con correo</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.divider}>
+              <View style={styles.rule} />
+              <Text variant="caption">o con tu número</Text>
+              <View style={styles.rule} />
+            </View>
+
+            <View style={{ gap: 12 }}>
+              <View style={styles.inputRow}>
+                <View style={styles.prefix}>
+                  <Text style={{ fontSize: 18 }}>🇻🇪</Text>
+                  <Text variant="bodyStrong">+58</Text>
+                </View>
+                <TextInput
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="414 123 4567"
+                  placeholderTextColor={Colors.textMuted}
+                  keyboardType="phone-pad"
+                  maxLength={12}
+                  style={styles.input}
+                  onSubmitEditing={() => valid && !sending && sendCode()}
+                />
+              </View>
+              <Button title={sending ? 'Enviando…' : 'Enviar código'} disabled={!valid || sending} onPress={sendCode} />
+            </View>
+
+            {error ? (
+              <View style={styles.error}>
+                <Ionicons name="alert-circle" size={18} color={Colors.crimson} />
+                <Text variant="caption" style={{ color: Colors.crimson, flex: 1 }}>
+                  {error}
+                </Text>
+              </View>
+            ) : null}
           </View>
-          {error ? (
-            <Text variant="caption" style={{ textAlign: 'center', color: Colors.crimson }}>
-              {error}
-            </Text>
-          ) : null}
-          <Button
-            title={sending ? 'Enviando…' : 'Enviar código'}
-            disabled={!valid || sending}
-            onPress={async () => {
-              setError('');
-              if (online) {
-                setSending(true);
-                try {
-                  await auth.requestOtp(`+58${digits}`);
-                } catch (e) {
-                  setError(e instanceof ApiRequestError ? e.message : 'No pudimos enviar el código. Revisa tu conexión.');
-                  return;
-                } finally {
-                  setSending(false);
-                }
-              }
-              update({ phone: digits });
-              router.push({ pathname: '/otp', params: { phone: digits } });
-            }}
-          />
-          <Text variant="caption" style={{ textAlign: 'center' }}>
+
+          <Text variant="caption" style={{ textAlign: 'center', marginTop: 32 }}>
             Al continuar aceptas los Términos y la Política de privacidad de Sionmarket.
           </Text>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'space-between' },
-  inputRow: { flexDirection: 'row', gap: 10 },
-  alt: {
-    flex: 1,
-    height: 48,
+  container: { flexGrow: 1, padding: 24, justifyContent: 'space-between', width: '100%', maxWidth: 480, alignSelf: 'center' },
+  provider: {
+    height: 54,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 10,
     borderRadius: Radius.pill,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: Colors.line,
+    backgroundColor: Colors.surface,
   },
+  divider: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  rule: { flex: 1, height: 1, backgroundColor: Colors.line },
+  inputRow: { flexDirection: 'row', gap: 10 },
   prefix: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -139,6 +167,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     height: 56,
     borderRadius: Radius.md,
     backgroundColor: Colors.background,
@@ -148,5 +177,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: Fonts.bodyMedium,
     color: Colors.text,
+  },
+  error: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: Radius.sm,
+    backgroundColor: '#FDECEE',
   },
 });

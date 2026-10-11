@@ -15,6 +15,7 @@ import { canConsumerCancel, MAIN_FLOW, STATUS_INFO } from '@/data/order-states';
 import { confirm } from '@/lib/confirm';
 import { lerp } from '@/lib/geo';
 import { riderProgress, useOrders } from '@/store/orders';
+import { goBack } from '@/lib/nav';
 
 const time = (ms: number) => new Date(ms).toLocaleTimeString('es-VE', { hour: 'numeric', minute: '2-digit' });
 
@@ -65,7 +66,7 @@ export default function PedidoScreen() {
             </Text>
           </View>
         )}
-        <Pressable style={styles.close} onPress={() => router.back()} accessibilityLabel="Cerrar">
+        <Pressable style={styles.close} onPress={goBack} accessibilityLabel="Cerrar">
           <Ionicons name="close" size={22} color={Colors.black} />
         </Pressable>
       </View>

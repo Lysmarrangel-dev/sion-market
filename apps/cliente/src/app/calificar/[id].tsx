@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { getRestaurant, RIDER } from '@/data/catalog';
 import { useOrders } from '@/store/orders';
+import { goBack } from '@/lib/nav';
 
 // RF-C08: separate ratings for the food (restaurant) and the delivery (rider).
 export default function Calificar() {
@@ -61,7 +62,7 @@ export default function Calificar() {
           disabled={!food || !delivery}
           onPress={() => {
             rate(order.id, { food, foodComment, delivery, deliveryComment });
-            router.back();
+            goBack();
           }}
         />
       </ScrollView>

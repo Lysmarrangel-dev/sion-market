@@ -1,7 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +10,7 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { useProfile } from '@/store/profile';
+import { goBack } from '@/lib/nav';
 
 // RF-C01 profile: name, verified phone, email and optional photo.
 export default function EditarPerfil() {
@@ -56,7 +56,7 @@ export default function EditarPerfil() {
           disabled={!name.trim()}
           onPress={() => {
             update({ name: name.trim(), email: email.trim(), photo });
-            router.back();
+            goBack();
           }}
         />
       </ScrollView>

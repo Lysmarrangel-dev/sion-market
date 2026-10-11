@@ -12,6 +12,7 @@ import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { getRestaurant } from '@/data/catalog';
 import { lineTotal, useCart } from '@/store/cart';
+import { goBack } from '@/lib/nav';
 
 export default function Carrito() {
   const cart = useCart();
@@ -54,7 +55,7 @@ export default function Carrito() {
             </View>
           </View>
         ))}
-        <Button title="Agregar más productos" variant="ghost" onPress={() => router.back()} />
+        <Button title="Agregar más productos" variant="ghost" onPress={goBack} />
 
         <View style={{ gap: 6 }}>
           <Text variant="heading">Nota para el restaurante</Text>

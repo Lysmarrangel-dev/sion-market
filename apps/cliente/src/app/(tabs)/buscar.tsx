@@ -5,10 +5,11 @@ import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
-import { RestaurantCard } from '@/components/restaurant-card';
+import { RestaurantGrid } from '@/components/restaurant-card';
 import { Text } from '@/components/text';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { CATEGORIES, PRODUCTS, RESTAURANTS, type Restaurant } from '@/data/catalog';
+import { CONTENT_MAX, useLayout } from '@/lib/layout';
 
 const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
@@ -51,10 +52,12 @@ export default function Buscar() {
   }).sort(SORTS.find((s) => s.id === sort)!.fn);
 
   const active = countFilters(filters);
+  const { wide } = useLayout();
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: Colors.background }}>
-      <View style={{ padding: 16, gap: 14 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.background }}>
+    <SafeAreaView edges={['top']} style={styles.page}>
+      <View style={{ padding: 16, paddingTop: wide ? 28 : 16, gap: 14 }}>
         <Text variant="display">Buscar</Text>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <View style={styles.search}>
@@ -105,9 +108,7 @@ export default function Buscar() {
             </Text>
           </Pressable>
         </View>
-        {results.map((r) => (
-          <RestaurantCard key={r.id} restaurant={r} />
-        ))}
+        <RestaurantGrid restaurants={results} />
         {!results.length ? (
           <View style={{ alignItems: 'center', padding: 40, gap: 8 }}>
             <Ionicons name="sad-outline" size={44} color={Colors.textMuted} />
@@ -121,7 +122,7 @@ export default function Buscar() {
 
       <Modal visible={sheet} animationType="slide" transparent onRequestClose={() => setSheet(false)}>
         <Pressable style={styles.backdrop} onPress={() => setSheet(false)} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, wide && styles.sheetWide]}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text variant="title">Filtros y orden</Text>
             <Text variant="bodyStrong" style={{ color: Colors.orangeDeep }} onPress={() => setFilters(NO_FILTERS)}>
@@ -165,6 +166,7 @@ export default function Buscar() {
         </View>
       </Modal>
     </SafeAreaView>
+    </View>
   );
 }
 
@@ -188,6 +190,7 @@ function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () 
 }
 
 const styles = StyleSheet.create({
+  page: { flex: 1, width: '100%', maxWidth: CONTENT_MAX, alignSelf: 'center' },
   search: {
     flex: 1,
     height: 50,
@@ -240,5 +243,14 @@ const styles = StyleSheet.create({
     borderTopRightRadius: Radius.lg,
     padding: 20,
     paddingBottom: 32,
+  },
+  // On wide screens the filters open as a centred dialog instead of a bottom sheet.
+  sheetWide: {
+    position: 'absolute',
+    top: '10%',
+    left: '50%',
+    width: 560,
+    marginLeft: -280,
+    borderRadius: Radius.lg,
   },
 });

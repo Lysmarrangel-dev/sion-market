@@ -30,7 +30,10 @@ const SLIDES = [
 ];
 
 export default function Onboarding() {
-  const { width } = useWindowDimensions();
+  // Slides take the width of the frame they sit in (a centred card on desktop web).
+  const window = useWindowDimensions();
+  const [measured, setMeasured] = useState(0);
+  const width = measured || window.width;
   const [index, setIndex] = useState(0);
   const list = useRef<FlatList>(null);
   const last = index === SLIDES.length - 1;
@@ -56,6 +59,8 @@ export default function Onboarding() {
         <FlatList
           ref={list}
           style={{ flex: 1 }}
+          onLayout={(e) => setMeasured(e.nativeEvent.layout.width)}
+          getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
           data={SLIDES}
           horizontal
           pagingEnabled

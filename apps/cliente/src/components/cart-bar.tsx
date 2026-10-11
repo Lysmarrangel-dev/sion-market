@@ -4,17 +4,19 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { formatUsd } from '@/components/price';
 import { Text } from '@/components/text';
+import { useLayout } from '@/lib/layout';
 import { Colors, Fonts, Radius } from '@/constants/theme';
 import { useCart } from '@/store/cart';
 
 // Floating "ver carrito" bar shown while the cart has items.
 export function CartBar({ bottom = 16 }: { bottom?: number }) {
   const { count, subtotalUsd } = useCart();
+  const { wide } = useLayout();
   if (!count) return null;
   return (
     <Pressable
       onPress={() => router.push('/carrito')}
-      style={({ pressed }) => [styles.bar, { bottom }, pressed && { transform: [{ scale: 0.98 }] }]}>
+      style={({ pressed }) => [styles.bar, { bottom }, wide && styles.barWide, pressed && { transform: [{ scale: 0.98 }] }]}>
       <View style={styles.count}>
         <Text style={styles.countText}>{count}</Text>
       </View>
@@ -43,6 +45,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
   },
+  // On wide screens it floats in the bottom-right corner instead of spanning the window.
+  barWide: { left: undefined, right: 24, width: 380 },
   count: { width: 38, height: 38, borderRadius: 19, backgroundColor: Colors.black, alignItems: 'center', justifyContent: 'center' },
   countText: { color: Colors.white, fontFamily: Fonts.heading },
   label: { flex: 1, fontFamily: Fonts.heading, fontSize: 16, color: Colors.black },
