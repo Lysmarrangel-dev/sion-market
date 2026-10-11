@@ -64,7 +64,9 @@ function configurarGoogle() {
   document.querySelector("[data-google]").hidden = false;
   document.getElementById("btn-google").addEventListener("click", async (e) => {
     cargando(e.currentTarget, true, "Abriendo Google");
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: urlDe(destino) } });
+    // Vuelve por pronto.html: si es una cuenta nueva de Google pide teléfono y términos, y luego sigue al destino.
+    sessionStorage.setItem("sm-siguiente", destino);
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: urlDe("pronto.html") } });
     if (error) { cargando(e.currentTarget, false); mostrarAviso(aviso, "error", escapar(traducirError(error))); }
   });
 }

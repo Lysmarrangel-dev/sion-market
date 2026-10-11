@@ -35,7 +35,7 @@ En Supabase → **SQL Editor**, ejecuta `supabase/migrations/0001_inicial.sql`. 
   - Reset password → `restablecer-clave.html` · asunto: *Crea tu contraseña nueva*
   - Change email → `cambio-correo.html` · asunto: *Confirma tu correo nuevo*
 - **SMTP propio** (Resend, Brevo, SES…): el SMTP de prueba de Supabase solo envía unos pocos correos por hora. Configúralo antes de abrir el registro.
-- **Google (opcional)**: activa el proveedor y pon `GOOGLE_HABILITADO = true` en `js/config.js`. Las cuentas de Google completan teléfono y términos en `pronto.html`.
+- **Google**: proveedor activo y `GOOGLE_HABILITADO = true` en `js/config.js`. Registro e inicio de sesión ofrecen "Continuar con Google"; las cuentas nuevas completan teléfono y términos en `pronto.html` y siguen a `/app`. Agrega `https://www.sionmarket.app/**` en Redirect URLs.
 
 ### 3. Conectar el front
 Edita `js/config.js` con la **Project URL** y la **anon public key** (Project Settings → API). La anon key es pública por diseño; la protección real es RLS. Nunca pongas la `service_role` en el front.

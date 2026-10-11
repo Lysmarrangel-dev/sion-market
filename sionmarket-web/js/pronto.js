@@ -9,6 +9,11 @@ function ver(nombre) {
 }
 
 const params = new URLSearchParams(location.search);
+// Destino guardado al entrar con Google desde login.html (solo rutas internas: lo valida login.js).
+const destino = (() => {
+  const d = sessionStorage.getItem("sm-siguiente");
+  return d && /^(\/app(\/[a-z0-9-]+)*|[a-z0-9-]+\.html)$/i.test(d) ? d : APP;
+})();
 const sesion = configurado ? await sesionActual() : null;
 
 if (!sesion) {
@@ -79,7 +84,10 @@ async function mostrarCuenta(s) {
   const faltaTelefono = !perfil?.telefono;
   const faltaTerminos = !perfil?.acepta_terminos_en;
   // Con la cuenta completa no hay nada que hacer aquí: la cuenta del cliente es la app web.
-  if (!error && !faltaTelefono && !faltaTerminos) return window.location.replace(APP);
+  if (!error && !faltaTelefono && !faltaTerminos) {
+    sessionStorage.removeItem("sm-siguiente");
+    return window.location.replace(destino);
+  }
   document.getElementById("datos-faltantes").hidden = !(faltaTelefono || faltaTerminos);
   document.getElementById("campo-telefono").hidden = !faltaTelefono;
   document.getElementById("campo-terminos").hidden = !faltaTerminos;
@@ -112,6 +120,7 @@ async function mostrarCuenta(s) {
 
     if (err) return mostrarAviso(aviso, "error", escapar(traducirError(err)));
     sessionStorage.removeItem("sm-terminos-google");
-    window.location.replace(APP);
+    sessionStorage.removeItem("sm-siguiente");
+    window.location.replace(destino);
   });
 }

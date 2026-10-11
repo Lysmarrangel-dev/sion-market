@@ -30,11 +30,8 @@ for (const [nombre, fn] of Object.entries(validadores)) {
 if (GOOGLE_HABILITADO) {
   document.querySelector("[data-google]").hidden = false;
   document.getElementById("btn-google").addEventListener("click", async (e) => {
-    if (!form.terminos.checked) {
-      document.getElementById("terminos-error").textContent = "Acepta los términos para continuar con Google.";
-      return form.terminos.focus();
-    }
-    sessionStorage.setItem("sm-terminos-google", "1");
+    // Con Google se crea la cuenta directo; si falta el teléfono o aceptar los términos, pronto.html los pide.
+    if (form.terminos.checked) sessionStorage.setItem("sm-terminos-google", "1");
     cargando(e.currentTarget, true, "Abriendo Google");
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: urlDe("pronto.html") } });
     if (error) { cargando(e.currentTarget, false); mostrarAviso(aviso, "error", escapar(traducirError(error))); }
