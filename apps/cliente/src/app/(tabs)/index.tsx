@@ -172,7 +172,9 @@ export default function Home() {
         style={[styles.ai, wide && { right: 24, bottom: count ? 90 : 24 }]}
         onPress={() => router.push('/asistente')}
         accessibilityLabel="Abrir Sion IA">
-        <Ionicons name="sparkles" size={22} color={Colors.inkInverse} />
+        <LinearGradient colors={BrandGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.aiFill}>
+          <Image source={require('@/assets/brand/sionmarket-isotipo-blanco.png')} style={styles.aiIcon} contentFit="contain" />
+        </LinearGradient>
       </Pressable>
       <CartBar />
     </SafeAreaView>
@@ -237,6 +239,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  aiFill: { flex: 1, borderRadius: 27, alignItems: 'center', justifyContent: 'center' },
+  aiIcon: { width: 20, height: 34 },
   section: { marginTop: 26, marginBottom: 12, paddingHorizontal: 16 },
   ai: {
     position: 'absolute',
@@ -245,9 +249,6 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: Colors.ink,
-    alignItems: 'center',
-    justifyContent: 'center',
     elevation: 6,
     shadowColor: '#000',
     shadowOpacity: 0.25,
