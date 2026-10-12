@@ -45,6 +45,8 @@ export const RestaurantSummary = z.object({
   logoUrl: z.string().nullable(),
   promo: z.string().nullable(),
   open: z.boolean(),
+  /** False when SionMarket suspended it: hidden from customers and not taking orders. */
+  enabled: z.boolean(),
   location: LatLng,
 });
 export type RestaurantSummary = z.infer<typeof RestaurantSummary>;
@@ -127,3 +129,26 @@ export type ProductInput = z.infer<typeof ProductInput>;
 
 export const ProductPatch = ProductFields.partial();
 export type ProductPatch = z.infer<typeof ProductPatch>;
+
+// Restaurant panel: a dish's customization (sizes, extras, sauces…). Saving sends the whole list;
+// groups and options without an id are new.
+export const ModifierOptionInput = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(1).max(60),
+  priceCents: z.number().int().min(0).max(100_000),
+});
+export type ModifierOptionInput = z.infer<typeof ModifierOptionInput>;
+
+export const ModifierGroupInput = z
+  .object({
+    id: z.string().optional(),
+    name: z.string().trim().min(1).max(60),
+    required: z.boolean(),
+    max: z.number().int().min(1).max(20),
+    options: z.array(ModifierOptionInput).min(1).max(30),
+  })
+  .refine((g) => g.max <= g.options.length, { message: 'No se pueden elegir más opciones de las que hay', path: ['max'] });
+export type ModifierGroupInput = z.infer<typeof ModifierGroupInput>;
+
+export const ProductCustomization = z.object({ groups: z.array(ModifierGroupInput).max(10) });
+export type ProductCustomization = z.infer<typeof ProductCustomization>;

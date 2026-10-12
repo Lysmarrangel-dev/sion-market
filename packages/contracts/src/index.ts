@@ -9,3 +9,4 @@ export * from './orders.js';
 export * from './errors.js';
 export * from './notifications.js';
 export * from './realtime.js';
+export * from './stats.js';

@@ -74,4 +74,9 @@ export class UserDirectory {
     this.cache.set(claims.sub, { user, until: Date.now() + CACHE_MS });
     return user;
   }
+
+  /** Drops a cached user after their roles change (other processes catch up within CACHE_MS). */
+  forget(userId: string) {
+    this.cache.delete(userId);
+  }
 }

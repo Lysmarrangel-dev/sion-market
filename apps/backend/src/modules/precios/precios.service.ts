@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { centsToVesCents, type Product, type Quote, type QuoteLine, type QuoteRequest } from '@sionmarket/contracts';
 import { desc, eq } from 'drizzle-orm';
 import { InjectDb } from '../../common/db.module.js';
-import { AppError } from '../../common/errors.js';
+import { AppError, notFound } from '../../common/errors.js';
 import type { Db } from '../../db/client.js';
 import { coupons, exchangeRates } from '../../db/schema.js';
 import { CatalogoService } from '../catalogo/catalogo.service.js';
@@ -56,6 +56,7 @@ export class PreciosService {
 
   async quote(userId: string, req: QuoteRequest): Promise<PricedCart> {
     const restaurant = await this.catalogo.restaurant(req.restaurantId);
+    if (!restaurant.enabled) throw notFound('El restaurante');
     if (!restaurant.open) throw new AppError('RESTAURANT_CLOSED', `${restaurant.name} está cerrado ahora`);
 
     const address = await this.usuarios.ownedAddress(userId, req.addressId);

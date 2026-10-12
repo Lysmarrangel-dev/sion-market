@@ -119,6 +119,8 @@ export const restaurants = sm.table(
     schedule: text('schedule').notNull(),
     location: point('location').notNull(),
     open: boolean('open').notNull().default(true),
+    /** Set by SionMarket admins: a disabled restaurant is hidden from customers and takes no orders. */
+    enabled: boolean('enabled').notNull().default(true),
     recommended: integer('recommended').notNull().default(100),
     zoneId: text('zone_id').references(() => zones.id),
     ownerUserId: uuid('owner_user_id').references(() => users.id),
