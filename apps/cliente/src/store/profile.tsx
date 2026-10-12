@@ -3,12 +3,21 @@ import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'r
 import { api, getSession, onSessionChange, online } from '@/lib/api';
 import { usePersistentState } from '@/lib/persist';
 
-export type Profile = { name: string; phone: string; email: string; photo: string | null; referralCode: string; creditUsd: number };
+export type Profile = {
+  name: string;
+  phone: string;
+  email: string;
+  photo: string | null;
+  referralCode: string;
+  creditUsd: number;
+  /** Account roles from the API (cliente, restaurante, repartidor, admin). */
+  roles?: string[];
+};
 
 const DEMO: Profile = { name: 'Albieri', phone: '', email: '', photo: null, referralCode: 'ALBIERI5', creditUsd: 0 };
 const EMPTY: Profile = { name: '', phone: '', email: '', photo: null, referralCode: '', creditUsd: 0 };
 
-type Me = { name: string | null; phone: string | null; email: string | null; photoUrl: string | null };
+type Me = { name: string | null; phone: string | null; email: string | null; photoUrl: string | null; roles: string[] };
 
 type Ctx = { profile: Profile; update: (patch: Partial<Profile>) => void };
 
@@ -32,6 +41,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
             email: me.email ?? p.email,
             phone: me.phone ?? p.phone,
             photo: me.photoUrl ?? p.photo,
+            roles: me.roles,
           })),
         )
         .catch(() => {});

@@ -1,12 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import type { ModifierGroup, Product, RestaurantDetail, RestaurantQuery, RestaurantSummary } from '@sionmarket/contracts';
+import { randomUUID } from 'node:crypto';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import type {
+  ModifierGroup,
+  Product,
+  ProductInput,
+  ProductPatch,
+  RestaurantDetail,
+  RestaurantInput,
+  RestaurantPatch,
+  RestaurantQuery,
+  RestaurantSummary,
+} from '@sionmarket/contracts';
 import { and, asc, desc, eq, exists, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { AuthUser } from '../../common/auth.js';
 import { CacheService } from '../../common/redis.module.js';
 import { InjectDb } from '../../common/db.module.js';
-import { forbidden, notFound } from '../../common/errors.js';
+import { AppError, forbidden, notFound } from '../../common/errors.js';
 import type { Db } from '../../db/client.js';
-import { categories, modifierGroups, modifierOptions, productModifierGroups, products, restaurants } from '../../db/schema.js';
+import { categories, modifierGroups, modifierOptions, orders, productModifierGroups, products, restaurants } from '../../db/schema.js';
 
 type RestaurantRow = typeof restaurants.$inferSelect;
 
@@ -28,6 +39,26 @@ const toSummary = (r: RestaurantRow): RestaurantSummary => ({
   open: r.open,
   location: { latitude: r.location.y, longitude: r.location.x },
 });
+
+/** URL-friendly id from a name: "Pizzería Don Nicola" → "pizzeria-don-nicola". */
+const slug = (name: string) =>
+  name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 50) || 'restaurante';
+
+/** Panel input → table columns (category and location are named differently in the table). */
+function restaurantColumns(input: RestaurantPatch) {
+  const { category, location, ...rest } = input;
+  return {
+    ...rest,
+    ...(category !== undefined ? { categoryId: category } : {}),
+    ...(location ? { location: { x: location.longitude, y: location.latitude } } : {}),
+  };
+}
 
 const SORTS = {
   recomendados: [asc(restaurants.recommended)],
@@ -136,10 +167,91 @@ export class CatalogoService {
     return { id: restaurantId, open };
   }
 
+  /** Restaurants the user manages: their own, or every one for an admin. */
+  async mine(user: AuthUser): Promise<RestaurantSummary[]> {
+    const rows = await this.db
+      .select()
+      .from(restaurants)
+      .where(user.roles.includes('admin') ? undefined : eq(restaurants.ownerUserId, user.id))
+      .orderBy(asc(restaurants.name));
+    return rows.map(toSummary);
+  }
+
+  async createRestaurant(user: AuthUser, input: RestaurantInput) {
+    await this.assertCategory(input.category);
+    const base = slug(input.name);
+    const [taken] = await this.db.select({ id: restaurants.id }).from(restaurants).where(eq(restaurants.id, base));
+    const id = taken ? `${base}-${randomUUID().slice(0, 4)}` : base;
+    await this.db.insert(restaurants).values({ id, ...restaurantColumns(input), ownerUserId: user.id } as typeof restaurants.$inferInsert);
+    await this.cache.invalidate(CACHE_NS);
+    return this.loadDetail(id);
+  }
+
+  async updateRestaurant(user: AuthUser, id: string, input: RestaurantPatch) {
+    const current = await this.assertOwner(user, id);
+    if (input.category) await this.assertCategory(input.category);
+    const etaMin = input.etaMin ?? current.etaMin;
+    const etaMax = input.etaMax ?? current.etaMax;
+    if (etaMax < etaMin) throw new AppError('VALIDATION', 'El tiempo máximo debe ser mayor o igual al mínimo');
+    const set = restaurantColumns(input);
+    if (Object.keys(set).length) await this.db.update(restaurants).set(set).where(eq(restaurants.id, id));
+    await this.cache.invalidate(CACHE_NS);
+    return this.loadDetail(id);
+  }
+
+  /** A restaurant with orders stays for their history; it can only be closed. */
+  async deleteRestaurant(user: AuthUser, id: string) {
+    await this.assertOwner(user, id);
+    const [order] = await this.db.select({ id: orders.id }).from(orders).where(eq(orders.restaurantId, id)).limit(1);
+    if (order) throw new AppError('VALIDATION', 'Este restaurante ya tiene pedidos: ciérralo en lugar de borrarlo', HttpStatus.CONFLICT);
+    await this.db.delete(restaurants).where(eq(restaurants.id, id));
+    await this.cache.invalidate(CACHE_NS);
+    return { id, deleted: true };
+  }
+
+  async createProduct(user: AuthUser, restaurantId: string, input: ProductInput) {
+    await this.assertOwner(user, restaurantId);
+    const [max] = await this.db
+      .select({ last: sql<number>`coalesce(max(${products.sort}), 0)` })
+      .from(products)
+      .where(eq(products.restaurantId, restaurantId));
+    const id = `${restaurantId.slice(0, 30)}-${slug(input.name).slice(0, 30)}-${randomUUID().slice(0, 4)}`;
+    await this.db.insert(products).values({ id, restaurantId, ...input, sort: Number(max?.last ?? 0) + 1 });
+    await this.cache.invalidate(CACHE_NS);
+    return (await this.loadProducts(eq(products.id, id)))[0];
+  }
+
+  async updateProduct(user: AuthUser, restaurantId: string, productId: string, input: ProductPatch) {
+    await this.assertOwner(user, restaurantId);
+    const where = and(eq(products.id, productId), eq(products.restaurantId, restaurantId))!;
+    const [row] = Object.keys(input).length
+      ? await this.db.update(products).set(input).where(where).returning({ id: products.id })
+      : await this.db.select({ id: products.id }).from(products).where(where);
+    if (!row) throw notFound('El producto');
+    await this.cache.invalidate(CACHE_NS);
+    return (await this.loadProducts(eq(products.id, productId)))[0];
+  }
+
+  async deleteProduct(user: AuthUser, restaurantId: string, productId: string) {
+    await this.assertOwner(user, restaurantId);
+    const [row] = await this.db
+      .delete(products)
+      .where(and(eq(products.id, productId), eq(products.restaurantId, restaurantId)))
+      .returning({ id: products.id });
+    if (!row) throw notFound('El producto');
+    await this.cache.invalidate(CACHE_NS);
+    return { id: productId, deleted: true };
+  }
+
+  private async assertCategory(id: string) {
+    const [c] = await this.db.select({ id: categories.id }).from(categories).where(eq(categories.id, id));
+    if (!c) throw new AppError('VALIDATION', 'Esa categoría no existe');
+  }
+
   async assertOwner(user: AuthUser, restaurantId: string) {
-    if (user.roles.includes('admin')) return;
     const r = await this.restaurant(restaurantId);
-    if (r.ownerUserId !== user.id) throw forbidden('Este restaurante no es tuyo');
+    if (!user.roles.includes('admin') && r.ownerUserId !== user.id) throw forbidden('Este restaurante no es tuyo');
+    return r;
   }
 
   private async loadProducts(where: ReturnType<typeof eq>): Promise<Product[]> {
