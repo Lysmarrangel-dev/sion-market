@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ProductAvailability, ProductInput, ProductPatch, RestaurantInput, RestaurantPatch, RestaurantQuery } from '@sionmarket/contracts';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { ProductAvailability, ProductCustomization, ProductInput, ProductPatch, RestaurantInput, RestaurantPatch, RestaurantQuery } from '@sionmarket/contracts';
 import { z } from 'zod';
 import { CurrentUser, Public, Roles, type AuthUser } from '../../common/auth.js';
 import { ZodPipe } from '../../common/zod.js';
@@ -34,6 +34,12 @@ export class CatalogoController {
   @Get('yo/restaurantes')
   mine(@CurrentUser() user: AuthUser) {
     return this.catalogo.mine(user);
+  }
+
+  @Roles('restaurante', 'admin')
+  @Get('yo/restaurantes/:id')
+  managed(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.catalogo.managedDetail(user, id);
   }
 
   @Roles('restaurante', 'admin')
@@ -75,6 +81,17 @@ export class CatalogoController {
   @Delete('restaurantes/:id/productos/:productId')
   removeProduct(@CurrentUser() user: AuthUser, @Param('id') id: string, @Param('productId') productId: string) {
     return this.catalogo.deleteProduct(user, id, productId);
+  }
+
+  @Roles('restaurante', 'admin')
+  @Put('restaurantes/:id/productos/:productId/personalizacion')
+  setCustomization(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Param('productId') productId: string,
+    @Body(new ZodPipe(ProductCustomization)) body: ProductCustomization,
+  ) {
+    return this.catalogo.setCustomization(user, id, productId, body);
   }
 
   @Roles('restaurante', 'admin')

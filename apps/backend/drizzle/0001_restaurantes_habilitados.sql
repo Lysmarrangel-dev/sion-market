@@ -1,0 +1,1 @@
+ALTER TABLE "sionmarket"."restaurants" ADD COLUMN "enabled" boolean DEFAULT true NOT NULL;

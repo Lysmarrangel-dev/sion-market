@@ -12,6 +12,8 @@ const InboxQuery = z.object({
     .optional()
     .transform((v) => (v ? v.split(',') : undefined))
     .pipe(z.array(OrderStatus).optional()),
+  /** Newest first, for the history; the inbox (default) is oldest first. */
+  recientes: z.stringbool().optional(),
 });
 
 @Controller()
@@ -48,6 +50,6 @@ export class PedidosController {
   @Roles('restaurante', 'admin')
   @Get('restaurantes/:id/pedidos')
   inbox(@CurrentUser() user: AuthUser, @Param('id') id: string, @Query(new ZodPipe(InboxQuery)) query: z.infer<typeof InboxQuery>) {
-    return this.pedidos.listForRestaurant(user, id, query.estado);
+    return this.pedidos.listForRestaurant(user, id, query.estado, query.recientes);
   }
 }

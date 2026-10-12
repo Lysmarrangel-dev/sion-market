@@ -14,6 +14,7 @@ import { CITY_CENTER } from '@/data/catalog';
 import { confirm } from '@/lib/confirm';
 import { useRequireLogin } from '@/lib/auth-gate';
 import { goBack } from '@/lib/nav';
+import { negocio } from '@/store/negocio';
 import { centsText, panel, parseUsd } from '@/lib/panel';
 
 const PRICE_LEVELS = [
@@ -88,8 +89,9 @@ function toInput(f: Form): RestaurantInput | string {
 }
 
 function EditarRestaurante() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
-  const [form, setForm] = useState<Form | null>(id ? null : EMPTY);
+  // `nombre` pre-fills a new restaurant (from a business request in the admin panel).
+  const { id, nombre } = useLocalSearchParams<{ id?: string; nombre?: string }>();
+  const [form, setForm] = useState<Form | null>(id ? null : { ...EMPTY, name: nombre ?? '' });
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -138,8 +140,9 @@ function EditarRestaurante() {
     setSaving(true);
     try {
       const saved = id ? await panel.update(id, input) : await panel.create(input);
+      await negocio.select(saved.id);
       if (id) goBack();
-      else router.replace({ pathname: '/panel/local', params: { id: saved.id } });
+      else router.replace('/negocio');
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -151,7 +154,8 @@ function EditarRestaurante() {
     if (!id || !(await confirm('Borrar restaurante', `¿Seguro que quieres borrar ${form.name} y su menú?`, 'Borrar'))) return;
     try {
       await panel.remove(id);
-      router.dismissTo('/panel');
+      await negocio.reload();
+      router.replace('/negocio');
     } catch (e) {
       setError((e as Error).message);
     }

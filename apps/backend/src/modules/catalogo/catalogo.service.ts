@@ -3,6 +3,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import type {
   ModifierGroup,
   Product,
+  ProductCustomization,
   ProductInput,
   ProductPatch,
   RestaurantDetail,
@@ -11,7 +12,7 @@ import type {
   RestaurantQuery,
   RestaurantSummary,
 } from '@sionmarket/contracts';
-import { and, asc, desc, eq, exists, ilike, inArray, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, exists, ilike, inArray, notExists, notInArray, or, sql } from 'drizzle-orm';
 import type { AuthUser } from '../../common/auth.js';
 import { CacheService } from '../../common/redis.module.js';
 import { InjectDb } from '../../common/db.module.js';
@@ -37,6 +38,7 @@ const toSummary = (r: RestaurantRow): RestaurantSummary => ({
   logoUrl: r.logoUrl,
   promo: r.promo,
   open: r.open,
+  enabled: r.enabled,
   location: { latitude: r.location.y, longitude: r.location.x },
 });
 
@@ -86,8 +88,17 @@ export class CatalogoService {
     return this.cache.getOrSet(CACHE_NS, `lista:${JSON.stringify(query)}`, CACHE_TTL, () => this.loadList(query));
   }
 
-  detail(id: string) {
-    return this.cache.getOrSet(CACHE_NS, `restaurante:${id}`, CACHE_TTL, () => this.loadDetail(id));
+  /** Public detail: a restaurant SionMarket disabled does not exist for customers. */
+  async detail(id: string) {
+    const detail = await this.cache.getOrSet(CACHE_NS, `restaurante:${id}`, CACHE_TTL, () => this.loadDetail(id));
+    if (!detail.enabled) throw notFound('El restaurante');
+    return detail;
+  }
+
+  /** The panel's view of a restaurant, disabled or not. */
+  async managedDetail(user: AuthUser, id: string) {
+    await this.assertOwner(user, id);
+    return this.loadDetail(id);
   }
 
   private loadCategories() {
@@ -102,6 +113,7 @@ export class CatalogoService {
       .from(restaurants)
       .where(
         and(
+          eq(restaurants.enabled, true),
           query.category ? eq(restaurants.categoryId, query.category) : undefined,
           query.openOnly ? eq(restaurants.open, true) : undefined,
           term
@@ -241,6 +253,89 @@ export class CatalogoService {
     if (!row) throw notFound('El producto');
     await this.cache.invalidate(CACHE_NS);
     return { id: productId, deleted: true };
+  }
+
+  /**
+   * Replaces a dish's customization groups. Groups can be shared between dishes of the same
+   * restaurant, so editing one changes it everywhere; a group no dish uses any more is deleted.
+   */
+  async setCustomization(user: AuthUser, restaurantId: string, productId: string, input: ProductCustomization) {
+    await this.assertOwner(user, restaurantId);
+    const [product] = await this.db
+      .select({ id: products.id })
+      .from(products)
+      .where(and(eq(products.id, productId), eq(products.restaurantId, restaurantId)));
+    if (!product) throw notFound('El producto');
+
+    const ids = input.groups.flatMap((g) => (g.id ? [g.id] : []));
+    const owned = ids.length
+      ? await this.db
+          .select({ id: modifierGroups.id })
+          .from(modifierGroups)
+          .where(and(eq(modifierGroups.restaurantId, restaurantId), inArray(modifierGroups.id, ids)))
+      : [];
+    if (owned.length !== new Set(ids).size) throw new AppError('VALIDATION', 'Uno de los grupos de opciones no es de este restaurante');
+
+    await this.db.transaction(async (tx) => {
+      const previous = await tx
+        .select({ groupId: productModifierGroups.groupId })
+        .from(productModifierGroups)
+        .where(eq(productModifierGroups.productId, productId));
+      await tx.delete(productModifierGroups).where(eq(productModifierGroups.productId, productId));
+
+      for (const [sort, g] of input.groups.entries()) {
+        const groupId = g.id ?? `${productId.slice(0, 40)}-g-${randomUUID().slice(0, 8)}`;
+        const fields = { name: g.name, required: g.required, min: g.required ? 1 : 0, max: g.max };
+        if (g.id) await tx.update(modifierGroups).set(fields).where(eq(modifierGroups.id, groupId));
+        else await tx.insert(modifierGroups).values({ id: groupId, restaurantId, ...fields });
+
+        // Options keep their ids so carts already holding one stay valid.
+        const keep = g.options.flatMap((o) => (o.id ? [o.id] : []));
+        await tx
+          .delete(modifierOptions)
+          .where(and(eq(modifierOptions.groupId, groupId), keep.length ? notInArray(modifierOptions.id, keep) : undefined));
+        for (const [i, o] of g.options.entries()) {
+          if (o.id) {
+            await tx
+              .update(modifierOptions)
+              .set({ name: o.name, priceCents: o.priceCents, sort: i })
+              .where(and(eq(modifierOptions.id, o.id), eq(modifierOptions.groupId, groupId)));
+          } else {
+            await tx.insert(modifierOptions).values({ id: `${groupId}-${randomUUID().slice(0, 6)}`, groupId, name: o.name, priceCents: o.priceCents, sort: i });
+          }
+        }
+        await tx.insert(productModifierGroups).values({ productId, groupId, sort });
+      }
+
+      const dropped = previous.map((p) => p.groupId).filter((id) => !ids.includes(id));
+      if (dropped.length) {
+        await tx
+          .delete(modifierGroups)
+          .where(
+            and(
+              inArray(modifierGroups.id, dropped),
+              notExists(tx.select({ one: sql`1` }).from(productModifierGroups).where(eq(productModifierGroups.groupId, modifierGroups.id))),
+            ),
+          );
+      }
+    });
+    await this.cache.invalidate(CACHE_NS);
+    return (await this.loadProducts(eq(products.id, productId)))[0];
+  }
+
+  /** Admin: suspend or restore a restaurant. */
+  async setEnabled(id: string, enabled: boolean) {
+    const [row] = await this.db.update(restaurants).set({ enabled }).where(eq(restaurants.id, id)).returning({ id: restaurants.id });
+    if (!row) throw notFound('El restaurante');
+    await this.cache.invalidate(CACHE_NS);
+    return { id, enabled };
+  }
+
+  /** Admin: hand a restaurant to an account (or leave it without owner). */
+  async setOwner(id: string, ownerUserId: string | null) {
+    const [row] = await this.db.update(restaurants).set({ ownerUserId }).where(eq(restaurants.id, id)).returning({ id: restaurants.id });
+    if (!row) throw notFound('El restaurante');
+    return { id, ownerUserId };
   }
 
   private async assertCategory(id: string) {

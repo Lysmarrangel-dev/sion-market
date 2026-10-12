@@ -206,7 +206,8 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     });
     async function handleStatus(e: { orderId: string; status: OrderStatus; reason: string | null }) {
       const order = await api<ApiOrder>('GET', `/pedidos/${e.orderId}`).catch(() => null);
-      if (!order) return;
+      // A restaurant owner also hears about its own restaurant's orders: only the buyer is notified here.
+      if (!order || order.customerId !== getSession()?.user.id) return;
       upsert(order);
       const restaurant = getRestaurant(order.restaurant.id);
       const n = notificationFor(e.status, {

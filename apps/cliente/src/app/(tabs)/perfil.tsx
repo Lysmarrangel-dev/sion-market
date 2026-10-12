@@ -13,11 +13,12 @@ import { afterLogout } from '@/lib/auth-gate';
 import { LoginPrompt } from '@/components/login-prompt';
 import { online } from '@/lib/api';
 import { useSession } from '@/lib/session';
-import { canManage } from '@/lib/panel';
+import { MODE_LABEL, useMode } from '@/lib/mode';
 
 function Perfil() {
   const { profile } = useProfile();
   const { addresses } = useAddresses();
+  const { modes, setMode } = useMode();
 
   const items: { icon: keyof typeof Ionicons.glyphMap; label: string; detail?: string; href?: Href; onPress?: () => void }[] = [
     { icon: 'location-outline', label: 'Mis direcciones', detail: `${addresses.length} guardadas`, href: '/direcciones' },
@@ -26,8 +27,14 @@ function Perfil() {
     { icon: 'notifications-outline', label: 'Notificaciones' },
     { icon: 'help-circle-outline', label: 'Ayuda' },
   ];
-  if (canManage(profile.roles)) {
-    items.unshift({ icon: 'storefront-outline', label: 'Panel del restaurante', detail: 'Menú y pedidos', href: '/panel' });
+  // Restaurant and admin accounts go back to their own panel from here.
+  for (const m of modes.filter((m) => m !== 'cliente').reverse()) {
+    items.unshift({
+      icon: m === 'admin' ? 'shield-checkmark-outline' : 'storefront-outline',
+      label: MODE_LABEL[m],
+      detail: m === 'admin' ? 'Toda la plataforma' : 'Pedidos, menú y ventas',
+      onPress: () => setMode(m),
+    });
   }
   // On the web the theme is chosen here (and in the top bar); the phone app follows the device.
   if (Platform.OS === 'web') {

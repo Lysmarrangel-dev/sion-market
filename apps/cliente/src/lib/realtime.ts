@@ -1,4 +1,4 @@
-import type { OrderStatusEvent, RiderPosition } from '@sionmarket/contracts';
+import { RT, type OrderStatusEvent, type RiderPosition } from '@sionmarket/contracts';
 import { io, type Socket } from 'socket.io-client';
 
 import { getSession, onSessionChange, online, REALTIME_URL } from '@/lib/api';
@@ -27,7 +27,10 @@ function connect() {
   });
 }
 
-if (online) onSessionChange(connect);
+if (online) {
+  onSessionChange(connect);
+  connect(); // the session may already be restored when this module loads
+}
 
 export function onOrderStatus(handler: (e: OrderStatusEvent) => void) {
   socket?.on('pedido.estado', handler);
@@ -44,5 +47,25 @@ export function followOrder(orderId: string, onPosition: (p: RiderPosition) => v
   return () => {
     s.emit('desuscribir', { orderId });
     s.off('repartidor.ubicacion', onPosition);
+  };
+}
+
+/**
+ * Restaurant inbox: new orders and every status change of this restaurant's orders.
+ * Rooms are lost when the socket reconnects, so the subscription is sent again each time.
+ */
+export function followRestaurant(restaurantId: string, handlers: { onNew: (e: OrderStatusEvent) => void; onStatus: (e: OrderStatusEvent) => void }) {
+  if (!socket) return () => {};
+  const s = socket;
+  const subscribe = () => s.emit('suscribir', { restaurantId });
+  subscribe();
+  s.on('connect', subscribe);
+  s.on(RT.orderNew, handlers.onNew);
+  s.on(RT.orderStatus, handlers.onStatus);
+  return () => {
+    s.emit('desuscribir', { restaurantId });
+    s.off('connect', subscribe);
+    s.off(RT.orderNew, handlers.onNew);
+    s.off(RT.orderStatus, handlers.onStatus);
   };
 }

@@ -1,11 +1,14 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 
 import { ScreenFrame } from '@/components/screen-frame';
 import { WebNav } from '@/components/web-nav';
 import { Colors, Fonts } from '@/constants/theme';
+import { online } from '@/lib/api';
 import { useLayout } from '@/lib/layout';
+import { MODE_HOME, useMode } from '@/lib/mode';
+import { useSession } from '@/lib/session';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -20,6 +23,10 @@ const WIDE_SCREENS = new Set(['index', 'buscar']);
 
 export default function TabsLayout() {
   const { wide } = useLayout();
+  const { mode } = useMode();
+  const session = useSession();
+  // Restaurants and admins are not here to order: send them to their panel.
+  if (online && session && mode !== 'cliente') return <Redirect href={MODE_HOME[mode]} />;
   return (
     <Tabs
       tabBar={wide ? (props) => <WebNav {...props} /> : undefined}

@@ -33,7 +33,7 @@ export async function setup() {
 type Res = { status: number; body: any };
 
 export function client(app: NestFastifyApplication) {
-  const call = async (method: 'GET' | 'POST' | 'PATCH' | 'DELETE', url: string, body?: unknown, token?: string): Promise<Res> => {
+  const call = async (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, body?: unknown, token?: string): Promise<Res> => {
     const res = await app.inject({
       method,
       url: `/v1${url}`,

@@ -12,6 +12,8 @@ export type Profile = {
   creditUsd: number;
   /** Account roles from the API (cliente, restaurante, repartidor, admin). */
   roles?: string[];
+  /** Which side of the app this account last chose: shopping, its restaurant or the back office. */
+  mode?: 'cliente' | 'restaurante' | 'admin';
 };
 
 const DEMO: Profile = { name: 'Albieri', phone: '', email: '', photo: null, referralCode: 'ALBIERI5', creditUsd: 0 };

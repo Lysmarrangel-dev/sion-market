@@ -35,6 +35,8 @@ const FRAMES: Record<string, Frame> = {
   onboarding: 'card',
   '(tabs)': 'wide',
   'restaurante/[id]': 'wide',
+  negocio: 'wide',
+  admin: 'wide',
 };
 
 // Online: restore the saved session and load the catalog before the first screen renders.

@@ -103,7 +103,7 @@ async function raw<T>(method: string, path: string, body?: unknown, token?: stri
   return { status: res.status, data: (text ? JSON.parse(text) : null) as T };
 }
 
-export async function api<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
+export async function api<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
   let res = await raw<T | ApiError>(method, path, body, session?.accessToken);
   if (res.status === 401 && session && supabase) {
     // The token may have expired while the app slept: refresh once and retry.
