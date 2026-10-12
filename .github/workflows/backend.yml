@@ -44,9 +44,14 @@ jobs:
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           HOST: ${{ vars.DEPLOY_HOST }}
           USER: ${{ vars.DEPLOY_USER || 'deploy' }}
+          API_DOMAIN: ${{ vars.API_DOMAIN || 'api.sionmarket.app' }}
         run: |
           install -m 600 /dev/null ~/.ssh_key && printf '%s\n' "$SSH_KEY" > ~/.ssh_key
           SSH="ssh -i ~/.ssh_key -o StrictHostKeyChecking=accept-new"
           rsync -az -e "$SSH" infra/nginx/ "$USER@$HOST:/opt/sionmarket/nginx/"
           rsync -az -e "$SSH" infra/docker-compose.prod.yml "$USER@$HOST:/opt/sionmarket/docker-compose.yml"
-          $SSH "$USER@$HOST" 'cd /opt/sionmarket && docker compose pull && docker compose up -d --remove-orphans && docker image prune -f'
+          $SSH "$USER@$HOST" 'cd /opt/sionmarket && docker compose pull && docker compose up -d --remove-orphans && docker compose exec -T nginx nginx -s reload && docker image prune -f'
+          # Nginx resuelve api y realtime solo al arrancar o recargar: sin la recarga de arriba sigue
+          # apuntando a los contenedores viejos y responde 502. Confirmamos que la API contesta.
+          for i in $(seq 1 20); do curl -fsS -o /dev/null "https://${API_DOMAIN}/v1/salud" && exit 0; sleep 5; done
+          echo "La API no responde en https://${API_DOMAIN}/v1/salud" >&2; exit 1
