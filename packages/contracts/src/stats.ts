@@ -70,6 +70,8 @@ export const AdminRestaurant = z.object({
   enabled: z.boolean(),
   zone: z.string().nullable(),
   ownerEmail: z.string().nullable(),
+  /** How to name the owner: email, else phone or name; null when nobody owns it. */
+  owner: z.string().nullable(),
   /** Orders in the last 30 days. */
   orders30d: z.number().int(),
   location: LatLng,

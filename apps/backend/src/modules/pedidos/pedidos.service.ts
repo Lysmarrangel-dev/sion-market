@@ -117,16 +117,16 @@ export class PedidosService {
     return Promise.all(rows.map((r) => this.toDto(r.order, r.restaurantName)));
   }
 
-  /** Restaurant panel inbox: active orders first, oldest first. */
-  async listForRestaurant(user: AuthUser, restaurantId: string, statuses?: OrderStatus[]) {
+  /** Restaurant panel inbox (oldest first, so nobody waits) or history (newest first). */
+  async listForRestaurant(user: AuthUser, restaurantId: string, statuses?: OrderStatus[], newestFirst = false) {
     await this.catalogo.assertOwner(user, restaurantId);
     const rows = await this.db
       .select({ order: orders, restaurantName: restaurants.name })
       .from(orders)
       .innerJoin(restaurants, eq(restaurants.id, orders.restaurantId))
       .where(and(eq(orders.restaurantId, restaurantId), statuses?.length ? inArray(orders.status, statuses) : undefined))
-      .orderBy(asc(orders.createdAt))
-      .limit(100);
+      .orderBy(newestFirst ? desc(orders.createdAt) : asc(orders.createdAt))
+      .limit(newestFirst ? 50 : 100);
     return Promise.all(rows.map(async (r) => ({ ...(await this.toDto(r.order, r.restaurantName)), pickupPin: r.order.pickupPin })));
   }
 

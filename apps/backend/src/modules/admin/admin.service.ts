@@ -101,6 +101,7 @@ export class AdminService {
       enabled: boolean;
       zone: string | null;
       owner_email: string | null;
+      owner: string | null;
       orders30d: number;
       lat: number;
       lng: number;
@@ -109,6 +110,7 @@ export class AdminService {
       select r.id, r.name, r.category_id as category, r.logo_url, r.open, r.enabled,
         coalesce(z.name, (select z2.name from sionmarket.zones z2 where ST_Contains(z2.area, r.location) limit 1)) as zone,
         u.email as owner_email,
+        case when r.owner_user_id is null then null else coalesce(u.email, u.phone, u.name, 'Cuenta sin datos') end as owner,
         (select count(*) from sionmarket.orders o where o.restaurant_id = r.id and o.created_at >= ${DAYS_30})::int as orders30d,
         ST_Y(r.location) as lat, ST_X(r.location) as lng, r.created_at
       from sionmarket.restaurants r
@@ -124,6 +126,7 @@ export class AdminService {
       enabled: r.enabled,
       zone: r.zone,
       ownerEmail: r.owner_email,
+      owner: r.owner,
       orders30d: r.orders30d,
       location: { latitude: Number(r.lat), longitude: Number(r.lng) },
       createdAt: new Date(r.created_at).toISOString(),

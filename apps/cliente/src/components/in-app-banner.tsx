@@ -4,7 +4,7 @@ import { Animated, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/text';
-import { Colors, Radius } from '@/constants/theme';
+import { Colors, Radius, theme } from '@/constants/theme';
 import { onInAppNotification } from '@/lib/notify';
 
 // Shows order status notifications while the app is open.
@@ -57,7 +57,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 14,
     borderRadius: Radius.md,
-    backgroundColor: Colors.ink,
+    // Always a dark banner with white text (ink turns white in the dark theme).
+    backgroundColor: theme === 'dark' ? Colors.surface : Colors.ink,
+    borderWidth: 1,
+    borderColor: Colors.line,
     elevation: 10,
     shadowColor: '#000',
     shadowOpacity: 0.3,
