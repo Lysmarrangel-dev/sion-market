@@ -4,6 +4,7 @@ import {
   type AdminOrder,
   type AdminOrderQuery,
   type AdminRestaurant,
+  type AdminRestaurantInput,
   type AdminSummary,
   type AdminUser,
   type AdminUserQuery,
@@ -137,12 +138,24 @@ export class AdminService {
     return this.catalogo.setEnabled(id, enabled);
   }
 
+  /** Registers a restaurant owned by the account with that email (checked before anything is created). */
+  async createRestaurant({ ownerEmail, ...input }: AdminRestaurantInput) {
+    const owner = await this.ownerByEmail(ownerEmail);
+    return this.catalogo.createRestaurant({ id: owner.id, roles: owner.roles as Role[] }, input);
+  }
+
   /** Gives the restaurant to the account with that email and makes sure it has the restaurant role. */
   async setOwner(id: string, email: string | null) {
     if (!email) return this.catalogo.setOwner(id, null);
+    const user = await this.ownerByEmail(email);
+    return this.catalogo.setOwner(id, user.id);
+  }
+
+  /** The account behind an email, given the restaurant role if it did not have it. */
+  private async ownerByEmail(email: string) {
     const user = await this.findByEmail(email);
     if (!user.roles.includes('restaurante')) await this.writeRoles(user.id, [...(user.roles as Role[]), 'restaurante']);
-    return this.catalogo.setOwner(id, user.id);
+    return user;
   }
 
   async zones() {

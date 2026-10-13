@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Put, Query } from '@nestjs/common';
-import { AdminOrderQuery, AdminUserQuery, SetActive, SetEnabled, SetOwner, SetRequestStatus, SetRoles, StatsQuery } from '@sionmarket/contracts';
+import { Body, Controller, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { AdminOrderQuery, AdminRestaurantInput, AdminUserQuery, SetActive, SetEnabled, SetOwner, SetRequestStatus, SetRoles, StatsQuery } from '@sionmarket/contracts';
 import { CurrentUser, Roles, type AuthUser } from '../../common/auth.js';
 import { ZodPipe } from '../../common/zod.js';
 import { AdminService } from './admin.service.js';
@@ -18,6 +18,11 @@ export class AdminController {
   @Get('restaurantes')
   restaurants() {
     return this.admin.restaurants();
+  }
+
+  @Post('restaurantes')
+  createRestaurant(@Body(new ZodPipe(AdminRestaurantInput)) body: AdminRestaurantInput) {
+    return this.admin.createRestaurant(body);
   }
 
   @Patch('restaurantes/:id/habilitado')

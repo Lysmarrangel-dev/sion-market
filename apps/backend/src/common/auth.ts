@@ -1,6 +1,7 @@
 import {
   createParamDecorator,
   Injectable,
+  Logger,
   SetMetadata,
   UnauthorizedException,
   type CanActivate,
@@ -30,6 +31,8 @@ export const CurrentUser = createParamDecorator((_: unknown, ctx: ExecutionConte
 /** Global guard: every route requires a valid Supabase access token unless marked @Public(). */
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly log = new Logger('Auth');
+
   constructor(
     private readonly verifier: SupabaseTokenVerifier,
     private readonly directory: UserDirectory,
@@ -46,7 +49,9 @@ export class AuthGuard implements CanActivate {
     let claims;
     try {
       claims = await this.verifier.verify(token);
-    } catch {
+    } catch (e) {
+      // Logged so a wave of rejected sessions can be told apart from expired tokens.
+      this.log.warn(`Token rechazado: ${(e as { code?: string }).code ?? (e as Error).message}`);
       throw new UnauthorizedException('Sesión vencida');
     }
     req.user = await this.directory.resolve(claims);

@@ -71,7 +71,7 @@ export default function AdminSolicitudes() {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {r.phone ? <Action icon="logo-whatsapp" label={r.phone} onPress={() => Linking.openURL(whatsapp(r.phone!))} /> : null}
             {r.email ? <Action icon="mail-outline" label={r.email} onPress={() => Linking.openURL(`mailto:${r.email}`)} /> : null}
-            <Action icon="add-circle-outline" label="Crear su local" onPress={() => router.push({ pathname: '/panel/editar', params: { nombre: r.businessName } })} />
+            <Action icon="add-circle-outline" label="Crear su local" onPress={() => router.push({ pathname: '/panel/editar', params: { nombre: r.businessName, ...(r.email ? { correo: r.email } : {}) } })} />
           </View>
           <Chips options={STATUSES} value={r.status as RequestStatus} onChange={(s) => setStatus(r, s)} />
         </View>

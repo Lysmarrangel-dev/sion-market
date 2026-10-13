@@ -14,6 +14,8 @@ export type Profile = {
   roles?: string[];
   /** Which side of the app this account last chose: shopping, its restaurant or the back office. */
   mode?: 'cliente' | 'restaurante' | 'admin';
+  /** Whose profile this is, so a different account signing in never inherits its roles or mode. */
+  userId?: string;
 };
 
 const DEMO: Profile = { name: 'Albieri', phone: '', email: '', photo: null, referralCode: 'ALBIERI5', creditUsd: 0 };
@@ -34,19 +36,25 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (!online || !hydrated) return;
     const sync = (s: ReturnType<typeof getSession>) => {
       if (!s) return setProfile(EMPTY);
-      setProfile((p) => ({ ...p, name: p.name || s.user.name || '', email: s.user.email ?? p.email, phone: s.user.phone ?? p.phone }));
-      api<Me>('GET', '/yo')
-        .then((me) =>
-          setProfile((p) => ({
-            ...p,
-            name: me.name || s.user.name || p.name,
-            email: me.email ?? p.email,
-            phone: me.phone ?? p.phone,
-            photo: me.photoUrl ?? p.photo,
-            roles: me.roles,
-          })),
-        )
-        .catch(() => {});
+      setProfile((prev) => {
+        const p = prev.userId === s.user.id ? prev : { ...EMPTY, userId: s.user.id };
+        return { ...p, name: p.name || s.user.name || '', email: s.user.email ?? p.email, phone: s.user.phone ?? p.phone };
+      });
+      // The panels wait for the roles, so a dropped request right after signing in is tried again.
+      const load = (attempt: number): Promise<void> =>
+        api<Me>('GET', '/yo')
+          .then((me) =>
+            setProfile((p) => ({
+              ...p,
+              name: me.name || s.user.name || p.name,
+              email: me.email ?? p.email,
+              phone: me.phone ?? p.phone,
+              photo: me.photoUrl ?? p.photo,
+              roles: me.roles,
+            })),
+          )
+          .catch(() => (attempt < 3 ? new Promise((r) => setTimeout(r, 1500 * attempt)).then(() => load(attempt + 1)) : undefined));
+      void load(1);
     };
     sync(getSession());
     return onSessionChange(sync);

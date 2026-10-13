@@ -11,8 +11,8 @@ let customer: string;
 let customerId: string;
 let addressId: string;
 
-const token = async (phone: string) => {
-  const { accessToken, user } = await signIn(phone);
+const token = async (phone: string, email?: string) => {
+  const { accessToken, user } = await signIn(phone, email);
   await ctx.api.call('GET', '/yo', undefined, accessToken); // creates the profile
   return { accessToken, id: user.id };
 };
@@ -178,6 +178,42 @@ describe('administración', () => {
     assert.equal(parrilla.zone, 'San Felipe centro');
     assert.equal(parrilla.orders30d, 3);
     assert.equal(parrilla.enabled, true);
+  });
+
+  test('la web puede mandar PATCH, PUT y DELETE', async () => {
+    const res = await ctx.app.inject({
+      method: 'OPTIONS',
+      url: '/v1/admin/restaurantes/la-parrilla-yaracuy/habilitado',
+      headers: { origin: 'https://www.sionmarket.app', 'access-control-request-method': 'PATCH' },
+    });
+    const allowed = String(res.headers['access-control-allow-methods']);
+    for (const m of ['PATCH', 'PUT', 'DELETE']) assert.ok(allowed.includes(m), `${m} en ${allowed}`);
+  });
+
+  test('registrar un restaurante lo deja con su dueño desde el inicio', async () => {
+    const nuevo = await token('+584146666666', 'nuevo.dueno@ejemplo.com');
+    const input = {
+      name: 'Cachapas La Esquina',
+      category: 'hamburguesas',
+      etaMin: 20,
+      etaMax: 30,
+      deliveryCents: 150,
+      address: 'Av. La Patria, San Felipe',
+      schedule: 'Lun a Dom · 8:00 a 14:00',
+      location: { latitude: 10.6, longitude: -68.2 }, // outside the demo zone, so the zone counts below stay put
+    };
+    const sinCuenta = await ctx.api.call('POST', '/admin/restaurantes', { ...input, ownerEmail: 'nadie@ejemplo.com' }, admin);
+    assert.equal(sinCuenta.status, 422);
+    const created = await ctx.api.call('POST', '/admin/restaurantes', { ...input, ownerEmail: 'Nuevo.Dueno@ejemplo.com' }, admin);
+    assert.equal(created.status, 201, JSON.stringify(created.body));
+    const list = await ctx.api.call('GET', '/admin/restaurantes', undefined, admin);
+    const mine = list.body.filter((r: any) => r.name === 'Cachapas La Esquina');
+    assert.equal(mine.length, 1, 'el intento sin cuenta no creó nada');
+    assert.equal(mine[0].ownerEmail, 'nuevo.dueno@ejemplo.com');
+    // The owner gets the restaurant role and sees it in their panel.
+    const panel = await ctx.api.call('GET', '/yo/restaurantes', undefined, nuevo.accessToken);
+    assert.equal(panel.status, 200);
+    assert.deepEqual(panel.body.map((r: any) => r.id), [created.body.id]);
   });
 
   test('deshabilitar un restaurante lo esconde y no acepta pedidos', async () => {

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { RestaurantDetail, RestaurantSummary } from '@sionmarket/contracts';
 import { useEffect, useSyncExternalStore } from 'react';
 
-import { ApiRequestError, onSessionChange } from '@/lib/api';
+import { ApiRequestError, getSession, onSessionChange } from '@/lib/api';
 import { panel } from '@/lib/panel';
 
 // The restaurant the business panel is working on. An owner with several picks one; the
@@ -26,16 +26,23 @@ function set(patch: Partial<State>) {
   listeners.forEach((l) => l());
 }
 
+// Bumped on sign-out so an answer that arrives afterwards cannot leave an error for the next account.
+let generation = 0;
+
 async function load(preferred?: string) {
+  if (!getSession()) return;
+  const mine = generation;
   if (state.status === 'idle') set({ status: 'loading' });
   try {
     const list = await panel.mine();
     const saved = preferred ?? state.restaurant?.id ?? (await AsyncStorage.getItem(KEY).catch(() => null));
     const id = list.find((r) => r.id === saved)?.id ?? list[0]?.id;
     const restaurant = id ? await panel.detail(id) : null;
+    if (mine !== generation) return;
     if (id) AsyncStorage.setItem(KEY, id).catch(() => {});
     set({ status: 'ready', list, restaurant, error: null });
   } catch (e) {
+    if (mine !== generation) return;
     if (e instanceof ApiRequestError && e.status === 403) set({ status: 'denied', error: null });
     else set({ status: state.restaurant ? 'ready' : 'error', error: (e as Error).message });
   }
@@ -52,6 +59,7 @@ export const negocio = {
   touchInbox: () => set({ inbox: state.inbox + 1 }),
   /** Forget the choice when the account signs out. */
   clear: () => {
+    generation++;
     AsyncStorage.removeItem(KEY).catch(() => {});
     set({ status: 'idle', list: [], restaurant: null, error: null, inbox: 0 });
   },
@@ -71,6 +79,12 @@ export function useNegocio() {
   return snapshot;
 }
 
+let signedIn = getSession()?.user.id;
 onSessionChange((s) => {
-  if (!s && state.status !== 'idle') negocio.clear();
+  const next = s?.user.id;
+  if (next === signedIn) return;
+  // Signed out or another account: start over (the first sign-in after opening the app keeps the saved choice).
+  if (signedIn) negocio.clear();
+  signedIn = next;
+  if (next && listeners.size && state.status === 'idle') void load();
 });
