@@ -49,10 +49,10 @@ export function client(app: NestFastifyApplication) {
 }
 
 /** Mints a token shaped like the ones Supabase Auth issues, signed with the test secret. */
-export async function signIn(phone: string) {
+export async function signIn(phone: string, email?: string) {
   const demo = Object.values(DEMO_USERS).find((u) => u.phone === phone);
   const id = demo?.id ?? uuidFrom(phone);
-  const accessToken = await new SignJWT({ role: 'authenticated', phone: phone.replace(/^\+/, '') })
+  const accessToken = await new SignJWT({ role: 'authenticated', phone: phone.replace(/^\+/, ''), ...(email ? { email } : {}) })
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
     .setSubject(id)
     .setAudience('authenticated')

@@ -1,7 +1,7 @@
 import { Redirect } from 'expo-router';
 import { useEffect } from 'react';
 
-import { PanelTabs } from '@/components/panel-tabs';
+import { PanelLoading, PanelTabs } from '@/components/panel-tabs';
 import { useRequireLogin } from '@/lib/auth-gate';
 import { MODE_HOME, useMode } from '@/lib/mode';
 import { alertNewOrder } from '@/lib/order-alert';
@@ -28,7 +28,9 @@ export default function NegocioLayout() {
   }, [id]);
 
   if (!allowed) return null;
-  if (rolesKnown && mode !== 'restaurante') return <Redirect href={MODE_HOME[mode]} />;
+  // Wait for the account's roles so a stale profile never loads a panel it may not open.
+  if (!rolesKnown) return <PanelLoading />;
+  if (mode !== 'restaurante') return <Redirect href={MODE_HOME[mode]} />;
 
   return (
     <PanelTabs

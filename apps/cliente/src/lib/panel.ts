@@ -2,6 +2,7 @@ import type {
   AdminOrder,
   AdminOrderQuery,
   AdminRestaurant,
+  AdminRestaurantInput,
   AdminSummary,
   AdminUser,
   AdminZone,
@@ -80,6 +81,7 @@ export const panel = {
 export const admin = {
   summary: (period: StatsPeriod) => api<AdminSummary>('GET', `/admin/resumen?periodo=${period}`),
   restaurants: () => api<AdminRestaurant[]>('GET', '/admin/restaurantes'),
+  createRestaurant: (input: AdminRestaurantInput) => api<RestaurantDetail>('POST', '/admin/restaurantes', input),
   setEnabled: (id: string, enabled: boolean) => api('PATCH', `/admin/restaurantes/${encodeURIComponent(id)}/habilitado`, { enabled }),
   setOwner: (id: string, email: string | null) => api('PATCH', `/admin/restaurantes/${encodeURIComponent(id)}/dueno`, { email }),
   zones: () => api<AdminZone[]>('GET', '/admin/zonas'),

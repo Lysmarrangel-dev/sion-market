@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { RestaurantInput } from './catalog.js';
 import { LatLng } from './geo.js';
 import { OrderStatus } from './order-status.js';
 import { Role } from './roles.js';
@@ -117,6 +118,10 @@ export type SetActive = z.infer<typeof SetActive>;
 /** Owner by email (the account must have signed up), or null to leave it without owner. */
 export const SetOwner = z.object({ email: z.email().nullable() });
 export type SetOwner = z.infer<typeof SetOwner>;
+
+/** An admin registering a restaurant for someone: it belongs to that account from the start. */
+export const AdminRestaurantInput = RestaurantInput.and(z.object({ ownerEmail: z.email('Escribe el correo de la cuenta del dueño') }));
+export type AdminRestaurantInput = z.infer<typeof AdminRestaurantInput>;
 
 export const AdminOrderQuery = z.object({
   estado: z.enum(['activos', 'terminados', 'todos']).default('activos'),

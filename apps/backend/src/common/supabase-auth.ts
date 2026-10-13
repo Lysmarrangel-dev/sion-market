@@ -20,7 +20,8 @@ export class SupabaseTokenVerifier {
   constructor(opts: { supabaseUrl?: string; jwtSecret?: string }) {
     if (opts.supabaseUrl) {
       this.issuer = `${opts.supabaseUrl.replace(/\/$/, '')}/auth/v1`;
-      this.jwks = createRemoteJWKSet(new URL(`${this.issuer}/.well-known/jwks.json`));
+      // The keys are re-fetched every 10 minutes; a slow answer from Supabase used to fail the request.
+      this.jwks = createRemoteJWKSet(new URL(`${this.issuer}/.well-known/jwks.json`), { timeoutDuration: 10_000 });
     }
     if (opts.jwtSecret) this.secret = new TextEncoder().encode(opts.jwtSecret);
   }
@@ -31,7 +32,11 @@ export class SupabaseTokenVerifier {
     const { payload } =
       alg === 'HS256'
         ? await jwtVerify(token, this.requireSecret(), { ...options, algorithms: ['HS256'] })
-        : await jwtVerify(token, this.requireJwks(), options);
+        : await jwtVerify(token, this.requireJwks(), options).catch((e: { code?: string; name?: string }) => {
+            // Fetching the keys failed (not the token): try once more before turning the user away.
+            if (e.code === 'ERR_JWKS_TIMEOUT' || e.name === 'TypeError') return jwtVerify(token, this.requireJwks(), options);
+            throw e;
+          });
     if (!payload.sub || payload.role !== 'authenticated') throw new Error('token sin usuario');
     return payload as SupabaseClaims;
   }

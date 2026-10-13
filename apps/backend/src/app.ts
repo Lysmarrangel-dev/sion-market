@@ -9,7 +9,8 @@ export async function createApp() {
     logger: config().NODE_ENV === 'test' ? ['error'] : ['log', 'warn', 'error'],
   });
   const origins = config().CORS_ORIGINS;
-  app.enableCors({ origin: origins === '*' ? true : origins.split(',') });
+  // Fastify's CORS only allows GET, HEAD and POST unless told otherwise; the panels also send PUT, PATCH and DELETE.
+  app.enableCors({ origin: origins === '*' ? true : origins.split(','), methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'] });
   app.setGlobalPrefix('v1');
   app.enableShutdownHooks();
   return app;

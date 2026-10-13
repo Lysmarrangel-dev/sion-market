@@ -34,7 +34,7 @@ export function StatCard({
     }
   }
   return (
-    <View style={[styles.card, style]}>
+    <View style={[statStyles.tile, style]}>
       <Text variant="caption">{label}</Text>
       <Text variant="title" numberOfLines={1} adjustsFontSizeToFit>
         {value}
@@ -52,7 +52,7 @@ export function StatCard({
   );
 }
 
-/** Grid of StatCards, two per row on a phone and four on a wide screen. */
+/** Grid of StatCards, two per row on a phone and four on a wide screen; cards in a row share one height. */
 export function StatGrid({ children, wide }: { children: React.ReactNode[]; wide: boolean }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
@@ -123,7 +123,7 @@ export function BarChart({ points, format, title }: { points: StatsPoint[]; form
       <View style={{ flexDirection: 'row' }}>
         {points.map((p, i) => (
           // Labels are wider than a bar's slot; they overflow it, centred under their bar.
-          <View key={p.label + i} style={{ flex: 1, alignItems: 'center' }}>
+          <View key={p.label + i} style={{ flex: 1, alignItems: 'center', overflow: 'visible' }}>
             {i % every === 0 ? (
               <Text variant="caption" style={styles.tick} numberOfLines={1}>
                 {p.label}
@@ -164,6 +164,8 @@ export function RankList({ rows, empty }: { rows: { key: string; label: string; 
 
 export const statStyles = StyleSheet.create({
   card: { backgroundColor: Colors.surface, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.line, padding: 16, gap: 12 },
+  /** A card inside StatGrid: fills its cell so every card in a row is as tall as the tallest. */
+  tile: { backgroundColor: Colors.surface, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.line, padding: 16, gap: 6, flex: 1 },
 });
 
 const styles = StyleSheet.create({
@@ -172,7 +174,7 @@ const styles = StyleSheet.create({
   slot: { flex: 1, height: '100%', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: 1 },
   bar: { width: '80%', maxWidth: 44, minWidth: 2, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
   axis: { height: 1, backgroundColor: Colors.line, marginTop: -12 },
-  tick: { width: 44, fontSize: 11, textAlign: 'center' },
+  tick: { width: 44, minWidth: 44, flexShrink: 0, fontSize: 11, textAlign: 'center' },
   track: { height: 6, borderRadius: 3, backgroundColor: Colors.background, marginLeft: 26 },
   fill: { height: 6, borderRadius: 3, backgroundColor: Colors.orange },
 });

@@ -103,12 +103,27 @@ async function raw<T>(method: string, path: string, body?: unknown, token?: stri
   return { status: res.status, data: (text ? JSON.parse(text) : null) as T };
 }
 
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export async function api<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
-  let res = await raw<T | ApiError>(method, path, body, session?.accessToken);
+  // Reads are retried once on a dropped connection or a busy server, common right after signing in.
+  const send = async (token?: string) => {
+    try {
+      const res = await raw<T | ApiError>(method, path, body, token);
+      if (method !== 'GET' || (res.status !== 502 && res.status !== 503)) return res;
+    } catch {
+      if (method !== 'GET') throw new ApiRequestError(0, 'NETWORK', 'No pudimos conectar con SionMarket. Revisa tu conexión.');
+    }
+    await wait(800);
+    return raw<T | ApiError>(method, path, body, token).catch(() => {
+      throw new ApiRequestError(0, 'NETWORK', 'No pudimos conectar con SionMarket. Revisa tu conexión.');
+    });
+  };
+  let res = await send(session?.accessToken);
   if (res.status === 401 && session && supabase) {
     // The token may have expired while the app slept: refresh once and retry.
     const { data } = await supabase.auth.refreshSession();
-    if (data.session) res = await raw<T | ApiError>(method, path, body, data.session.access_token);
+    if (data.session) res = await send(data.session.access_token);
   }
   if (res.status >= 400) {
     const err = res.data as ApiError | null;

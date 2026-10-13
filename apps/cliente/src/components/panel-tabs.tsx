@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
-import type { ColorValue } from 'react-native';
+import { ActivityIndicator, View, type ColorValue } from 'react-native';
 
 import { ScreenFrame } from '@/components/screen-frame';
 import { WebNav } from '@/components/web-nav';
@@ -44,5 +44,14 @@ export function PanelTabs({ tabs, hidden = [], panel }: { tabs: PanelTab[]; hidd
         <Tabs.Screen key={name} name={name} options={{ href: null }} />
       ))}
     </Tabs>
+  );
+}
+
+/** Shown while the account's roles load, before a panel decides whether it may open. */
+export function PanelLoading() {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.background }}>
+      <ActivityIndicator color={Colors.orange} size="large" />
+    </View>
   );
 }

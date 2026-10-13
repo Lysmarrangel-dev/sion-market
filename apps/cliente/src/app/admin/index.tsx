@@ -123,7 +123,7 @@ export default function AdminResumen() {
 
 function Tile({ icon, label, value, detail, href }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string; detail?: string; href: Href }) {
   return (
-    <Pressable style={[statStyles.card, { gap: 6 }]} onPress={() => router.navigate(href)} accessibilityRole="link">
+    <Pressable style={statStyles.tile} onPress={() => router.navigate(href)} accessibilityRole="link">
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Ionicons name={icon} size={18} color={Colors.orangeDeep} />
         <Text variant="caption" style={{ flex: 1 }}>

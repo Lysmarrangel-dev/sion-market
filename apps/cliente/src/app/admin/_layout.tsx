@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 
-import { PanelTabs } from '@/components/panel-tabs';
+import { PanelLoading, PanelTabs } from '@/components/panel-tabs';
 import { useRequireLogin } from '@/lib/auth-gate';
 import { MODE_HOME, useMode } from '@/lib/mode';
 
@@ -9,7 +9,9 @@ export default function AdminLayout() {
   const allowed = useRequireLogin();
   const { mode, rolesKnown } = useMode();
   if (!allowed) return null;
-  if (rolesKnown && mode !== 'admin') return <Redirect href={MODE_HOME[mode]} />;
+  // Wait for the account's roles so a stale profile never loads a panel it may not open.
+  if (!rolesKnown) return <PanelLoading />;
+  if (mode !== 'admin') return <Redirect href={MODE_HOME[mode]} />;
   return (
     <PanelTabs
       panel="Administración"

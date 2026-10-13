@@ -13,9 +13,10 @@ import { Colors, Radius } from '@/constants/theme';
 import { CITY_CENTER } from '@/data/catalog';
 import { confirm } from '@/lib/confirm';
 import { useRequireLogin } from '@/lib/auth-gate';
+import { useMode } from '@/lib/mode';
 import { goBack } from '@/lib/nav';
 import { negocio } from '@/store/negocio';
-import { centsText, panel, parseUsd } from '@/lib/panel';
+import { admin, centsText, panel, parseUsd } from '@/lib/panel';
 
 const PRICE_LEVELS = [
   { id: '1', label: '$ Económico' },
@@ -89,9 +90,13 @@ function toInput(f: Form): RestaurantInput | string {
 }
 
 function EditarRestaurante() {
-  // `nombre` pre-fills a new restaurant (from a business request in the admin panel).
-  const { id, nombre } = useLocalSearchParams<{ id?: string; nombre?: string }>();
+  // `nombre` and `correo` pre-fill a new restaurant (from a business request in the admin panel).
+  const { id, nombre, correo } = useLocalSearchParams<{ id?: string; nombre?: string; correo?: string }>();
   const [form, setForm] = useState<Form | null>(id ? null : { ...EMPTY, name: nombre ?? '' });
+  // An admin registers restaurants for someone else: it belongs to that account from the start.
+  const { mode } = useMode();
+  const forOwner = !id && mode === 'admin';
+  const [ownerEmail, setOwnerEmail] = useState(correo ?? '');
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -136,9 +141,15 @@ function EditarRestaurante() {
   const save = async () => {
     const input = toInput(form);
     if (typeof input === 'string') return setError(input);
+    if (forOwner && !/^\S+@\S+\.\S+$/.test(ownerEmail.trim())) return setError('Escribe el correo de la cuenta del dueño.');
     setError(null);
     setSaving(true);
     try {
+      if (forOwner) {
+        const created = await admin.createRestaurant({ ...input, ownerEmail: ownerEmail.trim() });
+        router.replace({ pathname: '/admin/local', params: { id: created.id } });
+        return;
+      }
       const saved = id ? await panel.update(id, input) : await panel.create(input);
       await negocio.select(saved.id);
       if (id) goBack();
@@ -166,6 +177,21 @@ function EditarRestaurante() {
       <ScreenHeader title={id ? 'Editar restaurante' : 'Nuevo restaurante'} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+          {forOwner ? (
+            <View style={formStyles.card}>
+              <Text variant="label">Dueño</Text>
+              <Field
+                label="Correo del dueño"
+                value={ownerEmail}
+                onChangeText={setOwnerEmail}
+                placeholder="dueno@correo.com"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                hint="La cuenta con la que entra a SionMarket. El local queda a su nombre y verá su panel."
+              />
+            </View>
+          ) : null}
+
           <View style={formStyles.card}>
             <Text variant="label">El local</Text>
             <Field label="Nombre" value={form.name} onChangeText={set('name')} placeholder="Arepera Doña Inés" />
